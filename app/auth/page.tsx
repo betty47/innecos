@@ -38,6 +38,11 @@ export default function AuthPage() {
       return
     }
 
+    if (!firstName || !lastName || !registerEmail || !registerPassword) {
+      setAlert({ type: "error", message: "All fields are required" })
+      return
+    }
+
     setLoading(true)
     setAlert(null)
 
@@ -75,27 +80,41 @@ export default function AuthPage() {
   }
 
   const handleLogin = async () => {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: loginEmail,
-        password: loginPassword,
-      }),
-    })
+    if (!loginEmail || !loginPassword) {
+      setAlert({ type: "error", message: "Email and password are required" })
+      return
+    }
 
+    setLoading(true)
+    setAlert(null)
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword,
+        }),
+      })
 
       const data = await res.json()
-    if (res.ok) {
-      localStorage.setItem("token", data.token)
-      // Redirect to dashboard instead of alert
-      window.location.href = "/dashboard"
-    } else {
-      alert(data.message || "Login failed")
+      if (res.ok) {
+        localStorage.setItem("token", data.token)
+        // Redirect to dashboard
+        window.location.href = "/dashboard"
+      } else {
+        setAlert({ type: "error", message: data.message || "Login failed" })
+      }
+    } catch (error) {
+      setAlert({ type: "error", message: "Network error. Please try again." })
+    } finally {
+      setLoading(false)
     }
   }
+
   const handleResetPassword = async () => {
     if (!resetEmail) {
       setAlert({ type: "error", message: "Please enter your email address" })
@@ -144,13 +163,9 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-innecos-green via-innecos-green/95 to-innecos-green/90 flex items-center justify-center p-4">
+      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23fcc200' fillOpacity='0.3'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(252,194,0,0.1)_0%,transparent_50%)]" />
       </div>
 
       <div className="w-full max-w-md relative z-10">
