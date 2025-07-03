@@ -75,38 +75,27 @@ export default function AuthPage() {
   }
 
   const handleLogin = async () => {
-    setLoading(true)
-    setAlert(null)
+    const res = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: loginEmail,
+        password: loginPassword,
+      }),
+    })
 
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: loginEmail,
-          password: loginPassword,
-        }),
-      })
 
       const data = await res.json()
-      if (res.ok) {
-        localStorage.setItem("token", data.token)
-        setAlert({ type: "success", message: "Login successful! Redirecting..." })
-        setTimeout(() => {
-          window.location.href = "/dashboard"
-        }, 1000)
-      } else {
-        setAlert({ type: "error", message: data.message || "Login failed" })
-      }
-    } catch (error) {
-      setAlert({ type: "error", message: "Network error. Please try again." })
-    } finally {
-      setLoading(false)
+    if (res.ok) {
+      localStorage.setItem("token", data.token)
+      // Redirect to dashboard instead of alert
+      window.location.href = "/dashboard"
+    } else {
+      alert(data.message || "Login failed")
     }
   }
-
   const handleResetPassword = async () => {
     if (!resetEmail) {
       setAlert({ type: "error", message: "Please enter your email address" })
