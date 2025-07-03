@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -24,8 +23,8 @@ export default function AuthPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    name: "",
-    company: "",
+    firstName: "",
+    lastName: "",
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +41,7 @@ export default function AuthPage() {
     }
 
     if (!isLogin && !isForgotPassword) {
-      if (!formData.name || !formData.company) {
+      if (!formData.firstName || !formData.lastName) {
         setAlert({ type: "error", message: "All fields are required for registration" })
         return false
       }
@@ -74,10 +73,8 @@ export default function AuthPage() {
     setLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
       if (isForgotPassword) {
+        // Handle forgot password
         setAlert({
           type: "success",
           message: "Password reset instructions have been sent to your email address",
@@ -87,40 +84,64 @@ export default function AuthPage() {
           setIsLogin(true)
         }, 2000)
       } else if (isLogin) {
-        // Mock login validation
-        if (formData.email === "admin@innecos.com" && formData.password === "admin123") {
-          const userData = {
-            name: "John Doe",
+        // Handle login
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
             email: formData.email,
-            role: "Admin",
-            company: "INNECOS",
-            avatar: "/placeholder.svg?height=40&width=40",
-          }
+            password: formData.password,
+          }),
+        })
 
-          localStorage.setItem("token", "mock-jwt-token")
-          localStorage.setItem("user", JSON.stringify(userData))
+        const data = await response.json()
+
+        if (response.ok) {
+          localStorage.setItem("token", data.token)
+          localStorage.setItem("user", JSON.stringify(data.user))
 
           setAlert({ type: "success", message: "Login successful! Redirecting..." })
           setTimeout(() => router.push("/dashboard"), 1000)
         } else {
-          setAlert({ type: "error", message: "Invalid email or password" })
+          setAlert({ type: "error", message: data.error || "Login failed" })
         }
       } else {
-        // Registration
-        setAlert({
-          type: "success",
-          message: "Registration successful! Please login with your credentials.",
-        })
-        setTimeout(() => {
-          setIsLogin(true)
-          setFormData({
+        // Handle registration
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
             email: formData.email,
-            password: "",
-            confirmPassword: "",
-            name: "",
-            company: "",
+            password: formData.password,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          setAlert({
+            type: "success",
+            message: "Registration successful! Please login with your credentials.",
           })
-        }, 2000)
+          setTimeout(() => {
+            setIsLogin(true)
+            setFormData({
+              email: formData.email,
+              password: "",
+              confirmPassword: "",
+              firstName: "",
+              lastName: "",
+            })
+          }, 2000)
+        } else {
+          setAlert({ type: "error", message: data.error || "Registration failed" })
+        }
       }
     } catch (error) {
       setAlert({ type: "error", message: "An error occurred. Please try again." })
@@ -134,8 +155,8 @@ export default function AuthPage() {
       email: "",
       password: "",
       confirmPassword: "",
-      name: "",
-      company: "",
+      firstName: "",
+      lastName: "",
     })
     setAlert(null)
   }
@@ -201,29 +222,31 @@ export default function AuthPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && !isForgotPassword && (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required={!isLogin && !isForgotPassword}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company</Label>
-                    <Input
-                      id="company"
-                      name="company"
-                      type="text"
-                      placeholder="Enter your company name"
-                      value={formData.company}
-                      onChange={handleInputChange}
-                      required={!isLogin && !isForgotPassword}
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        name="firstName"
+                        type="text"
+                        placeholder="Enter first name"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        required={!isLogin && !isForgotPassword}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        type="text"
+                        placeholder="Enter last name"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        required={!isLogin && !isForgotPassword}
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -361,19 +384,6 @@ export default function AuthPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Demo Credentials */}
-        {isLogin && !isForgotPassword && (
-          <Card className="animate-fadeIn bg-white/10 border-white/20">
-            <CardContent className="pt-6">
-              <div className="text-center text-white/90 text-sm">
-                <p className="font-medium mb-2">Demo Credentials:</p>
-                <p>Email: admin@innecos.com</p>
-                <p>Password: admin123</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   )

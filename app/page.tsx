@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Leaf, Factory, Users, BarChart3, ArrowRight, Shield, Zap, Globe } from "lucide-react"
+import { redirect } from "next/navigation"
 
 export default function HomePage() {
+  redirect("/auth")
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-innecos-green via-innecos-green/95 to-innecos-green/90">
       {/* Navigation */}
