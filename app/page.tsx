@@ -197,7 +197,7 @@ export default function AdminLanding() {
                 <p className="text-xs text-gray-600">Innovative Eco Solutions</p>
               </div>
             </div>
-            <p className="text-gray-600 text-sm">© 2025 INNECOS. Building a smarter agricultural future.</p>
+            <p className="text-gray-600 text-sm">© 2024 INNECOS. Building a smarter agricultural future.</p>
           </div>
         </div>
       </footer>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -14,72 +13,79 @@ import { Leaf, Mail, Lock, User, ArrowLeft, Eye, EyeOff, Shield, CheckCircle } f
 export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
-  // Login state
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
 
-  // Register state
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [registerEmail, setRegisterEmail] = useState("")
-  const [registerPassword, setRegisterPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  // Replace the existing handleLogin function with this mock version
+  const handleLogin = async () => {
+    try {
+      // Mock authentication - simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  // API handlers
-  const handleRegister = async () => {
-    if (registerPassword !== confirmPassword) {
-      alert("Passwords do not match")
-      return
-    }
+      // Mock validation
+      if (!loginEmail || !loginPassword) {
+        alert("Please enter both email and password")
+        return
+      }
 
-    const res = await fetch("http://localhost:5000/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        email: registerEmail,
-        password: registerPassword,
-      }),
-    })
+      // Mock successful login for demo purposes
+      // In a real app, this would validate against your backend
+      if (loginEmail.includes("@") && loginPassword.length >= 6) {
+        // Generate a mock token
+        const mockToken = "mock-jwt-token-" + Date.now()
+        localStorage.setItem("token", mockToken)
 
-    const data = await res.json()
+        // Store mock user data
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            name: "John Doe",
+            email: loginEmail,
+            role: "Admin",
+          }),
+        )
 
-    if (res.ok) {
-      alert("Registration successful. Please login.")
-    } else {
-      alert(data.message || "Registration failed")
+        // Redirect to dashboard
+        window.location.href = "/dashboard"
+      } else {
+        alert("Invalid credentials. Please use a valid email and password (min 6 characters)")
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      alert("Login failed. Please try again.")
     }
   }
 
-  const handleLogin = async () => {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: loginEmail,
-        password: loginPassword,
-      }),
-    })
+  const handleRegister = async (formData: FormData) => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      alert("Registration successful! Please login with your credentials.")
 
-    const data = await res.json()
+      // Switch to login tab
+      const tabsList = document.querySelector('[role="tablist"]') as HTMLElement
+      const loginTab = tabsList?.querySelector('[value="login"]') as HTMLElement
+      loginTab?.click()
+    } catch (error) {
+      alert("Registration failed. Please try again.")
+    }
+  }
 
-    if (res.ok) {
-      localStorage.setItem("token", data.token)
-      alert("Login successful")
-      // redirect or update user state
-    } else {
-      alert(data.message || "Login failed")
+  const handleForgotPassword = async (email: string) => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (email.includes("@")) {
+        alert("Password reset link sent to your email!")
+      } else {
+        alert("Please enter a valid email address")
+      }
+    } catch (error) {
+      alert("Failed to send reset link. Please try again.")
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-innecos-green via-innecos-green/95 to-innecos-green/90 flex items-center justify-center p-4">
+      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div
           className="absolute inset-0"
@@ -90,8 +96,12 @@ export default function AuthPage() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
+        {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center text-white hover:text-innecos-yellow transition-colors mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-white hover:text-innecos-yellow transition-colors mb-6"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Link>
@@ -107,6 +117,7 @@ export default function AuthPage() {
           <p className="text-green-100">Secure access to your agro-processing platform</p>
         </div>
 
+        {/* Auth Card */}
         <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
             <div className="w-16 h-16 bg-gradient-to-br from-innecos-yellow to-innecos-green rounded-full flex items-center justify-center mx-auto mb-4">
@@ -115,93 +126,264 @@ export default function AuthPage() {
             <CardTitle className="text-2xl text-innecos-green">Welcome Back</CardTitle>
             <CardDescription>Choose your authentication method below</CardDescription>
           </CardHeader>
-
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
-                <TabsTrigger value="forgot">Reset</TabsTrigger>
+                <TabsTrigger
+                  value="login"
+                  className="data-[state=active]:bg-innecos-yellow data-[state=active]:text-innecos-green"
+                >
+                  Login
+                </TabsTrigger>
+                <TabsTrigger
+                  value="register"
+                  className="data-[state=active]:bg-innecos-yellow data-[state=active]:text-innecos-green"
+                >
+                  Register
+                </TabsTrigger>
+                <TabsTrigger
+                  value="forgot"
+                  className="data-[state=active]:bg-innecos-yellow data-[state=active]:text-innecos-green"
+                >
+                  Reset
+                </TabsTrigger>
               </TabsList>
 
-              {/* Login */}
+              {/* Login Tab */}
               <TabsContent value="login" className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input id="login-email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email" className="text-innecos-green font-medium">
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="admin@innecos.com"
+                        className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                      />
+                    </div>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password" className="text-innecos-green font-medium">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="login-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        className="pl-10 pr-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="remember" />
+                      <Label htmlFor="remember" className="text-sm text-gray-600">
+                        Remember me
+                      </Label>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-sm text-innecos-green hover:text-innecos-green/80 font-medium"
+                      onClick={() => {
+                        const tabsList = document.querySelector('[role="tablist"]') as HTMLElement
+                        const forgotTab = tabsList?.querySelector('[value="forgot"]') as HTMLElement
+                        forgotTab?.click()
+                      }}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <Button
+                    className="w-full bg-innecos-green hover:bg-innecos-green/90 text-white font-semibold py-2.5"
+                    onClick={handleLogin}
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Sign In to Portal
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="login-password"
-                      type={showPassword ? "text" : "password"}
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                    />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400">
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </TabsContent>
+
+              {/* Register Tab */}
+              <TabsContent value="register" className="space-y-4">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="first-name" className="text-innecos-green font-medium">
+                        First Name
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="first-name"
+                          placeholder="John"
+                          className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last-name" className="text-innecos-green font-medium">
+                        Last Name
+                      </Label>
+                      <Input
+                        id="last-name"
+                        placeholder="Doe"
+                        className="border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email" className="text-innecos-green font-medium">
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="register-email"
+                        type="email"
+                        placeholder="john.doe@company.com"
+                        className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password" className="text-innecos-green font-medium">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="register-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Create a strong password"
+                        className="pl-10 pr-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password" className="text-innecos-green font-medium">
+                      Confirm Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="confirm-password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        className="pl-10 pr-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <Checkbox id="terms" className="mt-1" />
+                    <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
+                      I agree to the{" "}
+                      <a href="#" className="text-innecos-green hover:underline font-medium">
+                        Terms of Service
+                      </a>{" "}
+                      and{" "}
+                      <a href="#" className="text-innecos-green hover:underline font-medium">
+                        Privacy Policy
+                      </a>
+                    </Label>
+                  </div>
+                  <Button className="w-full bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold py-2.5">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Create Admin Account
+                  </Button>
+                </div>
+              </TabsContent>
+
+              {/* Forgot Password Tab */}
+              <TabsContent value="forgot" className="space-y-4">
+                <div className="text-center mb-4">
+                  <div className="w-16 h-16 bg-innecos-yellow/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Mail className="w-8 h-8 text-innecos-yellow" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-innecos-green mb-2">Reset Your Password</h3>
+                  <p className="text-gray-600 text-sm">
+                    Enter your email address and we'll send you a link to reset your password.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email" className="text-innecos-green font-medium">
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="Enter your email address"
+                        className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    className="w-full bg-innecos-green hover:bg-innecos-green/90 text-white font-semibold py-2.5"
+                    onClick={() => {
+                      const resetEmailInput = document.getElementById("reset-email") as HTMLInputElement
+                      const email = resetEmailInput?.value || ""
+                      handleForgotPassword(email)
+                    }}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Send Reset Link
+                  </Button>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      className="text-sm text-innecos-green hover:text-innecos-green/80 font-medium"
+                      onClick={() => {
+                        const tabsList = document.querySelector('[role="tablist"]') as HTMLElement
+                        const loginTab = tabsList?.querySelector('[value="login"]') as HTMLElement
+                        loginTab?.click()
+                      }}
+                    >
+                      Back to Login
                     </button>
                   </div>
                 </div>
-                <Button className="w-full" onClick={handleLogin}>
-                  <Shield className="w-4 h-4 mr-2" /> Sign In to Portal
-                </Button>
-              </TabsContent>
-
-              {/* Register */}
-              <TabsContent value="register" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first-name">First Name</Label>
-                    <Input id="first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last-name">Last Name</Label>
-                    <Input id="last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">Email Address</Label>
-                  <Input id="register-email" type="email" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">Password</Label>
-                  <Input
-                    id="register-password"
-                    type={showPassword ? "text" : "password"}
-                    value={registerPassword}
-                    onChange={(e) => setRegisterPassword(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
-                </div>
-                <Button className="w-full" onClick={handleRegister}>
-                  <CheckCircle className="w-4 h-4 mr-2" /> Create Admin Account
-                </Button>
-              </TabsContent>
-
-              {/* Reset */}
-              <TabsContent value="forgot">
-                <p className="text-sm text-gray-500">Reset feature coming soon.</p>
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
 
+        {/* Footer */}
         <div className="text-center mt-8 text-green-100 text-sm">
-          <p>© 2025 INNECOS LTD - Innovative Eco Solutions</p>
+          <p>© 2024 INNECOS LTD - Innovative Eco Solutions</p>
+          <p className="mt-1">Building a smarter agricultural future</p>
         </div>
       </div>
     </div>
