@@ -7,7 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -17,8 +19,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -36,15 +44,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
   Leaf,
   LayoutDashboard,
   Factory,
@@ -52,19 +51,20 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
-  Search,
   Plus,
+  Search,
+  Filter,
   Edit,
   Trash2,
   Eye,
-  Filter,
-  Download,
-  Wheat,
-  Truck,
+  Package,
+  AlertTriangle,
+  CheckCircle,
   LogOut,
   User,
   Shield,
   Cog,
+  Lock,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -77,7 +77,9 @@ const mockTools = [
     price: 15000,
     stock: 12,
     status: "In Stock",
-    description: "High-efficiency grain dryer with advanced temperature control",
+    description: "High-efficiency grain dryer with automated temperature control",
+    image: "/placeholder.svg?height=100&width=100",
+    specifications: "Capacity: 500kg/hour, Power: 15kW",
     lastUpdated: "2024-01-15",
   },
   {
@@ -87,7 +89,9 @@ const mockTools = [
     price: 8500,
     stock: 8,
     status: "In Stock",
-    description: "Professional maize milling system for medium-scale operations",
+    description: "Professional maize milling machine for commercial use",
+    image: "/placeholder.svg?height=100&width=100",
+    specifications: "Capacity: 300kg/hour, Power: 10kW",
     lastUpdated: "2024-01-14",
   },
   {
@@ -97,7 +101,9 @@ const mockTools = [
     price: 12000,
     stock: 3,
     status: "Low Stock",
-    description: "Premium oil pressing equipment for various seeds",
+    description: "Advanced oil pressing machine for various seeds",
+    image: "/placeholder.svg?height=100&width=100",
+    specifications: "Capacity: 200kg/hour, Power: 12kW",
     lastUpdated: "2024-01-13",
   },
   {
@@ -107,17 +113,21 @@ const mockTools = [
     price: 18000,
     stock: 0,
     status: "Out of Stock",
-    description: "Industrial feed processing unit with mixing capabilities",
+    description: "Complete feed processing solution with mixing capabilities",
+    image: "/placeholder.svg?height=100&width=100",
+    specifications: "Capacity: 800kg/hour, Power: 20kW",
     lastUpdated: "2024-01-12",
   },
   {
     id: 5,
     name: "Silo Storage System",
-    category: "Storage",
+    category: "Storage Systems",
     price: 25000,
-    stock: 6,
+    stock: 5,
     status: "In Stock",
-    description: "Large capacity grain storage silo with monitoring system",
+    description: "Modular silo system for grain storage",
+    image: "/placeholder.svg?height=100&width=100",
+    specifications: "Capacity: 50 tons, Material: Galvanized Steel",
     lastUpdated: "2024-01-11",
   },
 ]
@@ -128,7 +138,9 @@ export default function ToolsPage() {
   const [loading, setLoading] = useState(true)
   const [tools, setTools] = useState(mockTools)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterCategory, setFilterCategory] = useState("all")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [selectedTool, setSelectedTool] = useState<any>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -138,7 +150,6 @@ export default function ToolsPage() {
       return
     }
 
-    // Get user data from localStorage (mock system)
     const userData = localStorage.getItem("user")
     if (userData) {
       setUser(JSON.parse(userData))
@@ -155,16 +166,9 @@ export default function ToolsPage() {
 
   const handleLogout = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem("user")
     router.push("/auth")
   }
-
-  const filteredTools = tools.filter((tool) => {
-    const matchesSearch =
-      tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tool.category.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = filterCategory === "all" || tool.category === filterCategory
-    return matchesSearch && matchesCategory
-  })
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -178,6 +182,31 @@ export default function ToolsPage() {
         return "bg-gray-100 text-gray-700"
     }
   }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "In Stock":
+        return <CheckCircle className="w-3 h-3 mr-1" />
+      case "Low Stock":
+        return <AlertTriangle className="w-3 h-3 mr-1" />
+      case "Out of Stock":
+        return <Package className="w-3 h-3 mr-1" />
+      default:
+        return null
+    }
+  }
+
+  const filteredTools = tools.filter((tool) => {
+    const matchesSearch =
+      tool.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tool.category.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = categoryFilter === "all" || tool.category === categoryFilter
+    const matchesStatus = statusFilter === "all" || tool.status === statusFilter
+
+    return matchesSearch && matchesCategory && matchesStatus
+  })
+
+  const categories = [...new Set(tools.map((tool) => tool.category))]
 
   if (loading) {
     return (
@@ -269,18 +298,6 @@ export default function ToolsPage() {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton>
-                      <Truck className="w-4 h-4" />
-                      <span>Supply Chain</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
-                      <Wheat className="w-4 h-4" />
-                      <span>Inventory</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
                       <Settings className="w-4 h-4" />
                       <span>Settings</span>
                     </SidebarMenuButton>
@@ -321,6 +338,10 @@ export default function ToolsPage() {
                   Security
                 </DropdownMenuItem>
                 <DropdownMenuItem>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Change Password
+                </DropdownMenuItem>
+                <DropdownMenuItem>
                   <Cog className="w-4 h-4 mr-2" />
                   Preferences
                 </DropdownMenuItem>
@@ -342,24 +363,20 @@ export default function ToolsPage() {
             <div className="flex h-16 items-center gap-4 px-6">
               <SidebarTrigger />
               <div className="flex-1">
-                <h1 className="text-xl font-semibold text-innecos-green">Our Tools Management</h1>
+                <h1 className="text-xl font-semibold text-innecos-green">Our Tools</h1>
               </div>
               <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green">
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Tool
+                      Add New Tool
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle>Add New Tool</DialogTitle>
-                      <DialogDescription>Add a new agro-processing tool to your inventory.</DialogDescription>
+                      <DialogDescription>Add a new agricultural tool to your inventory.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid grid-cols-4 items-center gap-4">
@@ -377,11 +394,11 @@ export default function ToolsPage() {
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="grain-processing">Grain Processing</SelectItem>
-                            <SelectItem value="milling-systems">Milling Systems</SelectItem>
-                            <SelectItem value="oil-processing">Oil Processing</SelectItem>
-                            <SelectItem value="feed-processing">Feed Processing</SelectItem>
-                            <SelectItem value="storage">Storage</SelectItem>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -397,12 +414,6 @@ export default function ToolsPage() {
                         </Label>
                         <Input id="stock" type="number" className="col-span-3" />
                       </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="description" className="text-right">
-                          Description
-                        </Label>
-                        <Textarea id="description" className="col-span-3" />
-                      </div>
                     </div>
                     <DialogFooter>
                       <Button type="submit" className="bg-innecos-green hover:bg-innecos-green/90">
@@ -417,42 +428,107 @@ export default function ToolsPage() {
 
           {/* Tools Content */}
           <main className="flex-1 p-6 space-y-6">
-            {/* Filters and Search */}
+            {/* Filters */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-innecos-green">Tools Inventory</CardTitle>
-                <CardDescription>Manage your agro-processing equipment catalog</CardDescription>
+                <CardTitle className="text-innecos-green">Filter Tools</CardTitle>
+                <CardDescription>Search and filter your agricultural tools</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         placeholder="Search tools..."
+                        className="pl-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
                       />
                     </div>
                   </div>
-                  <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger className="w-[200px]">
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="w-[180px]">
                       <Filter className="w-4 h-4 mr-2" />
-                      <SelectValue placeholder="Filter by category" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="Grain Processing">Grain Processing</SelectItem>
-                      <SelectItem value="Milling Systems">Milling Systems</SelectItem>
-                      <SelectItem value="Oil Processing">Oil Processing</SelectItem>
-                      <SelectItem value="Feed Processing">Feed Processing</SelectItem>
-                      <SelectItem value="Storage">Storage</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[150px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="In Stock">In Stock</SelectItem>
+                      <SelectItem value="Low Stock">Low Stock</SelectItem>
+                      <SelectItem value="Out of Stock">Out of Stock</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+              </CardContent>
+            </Card>
 
-                {/* Tools Table */}
+            {/* Tools Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTools.map((tool) => (
+                <Card key={tool.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg text-innecos-green">{tool.name}</CardTitle>
+                        <CardDescription className="text-sm">{tool.category}</CardDescription>
+                      </div>
+                      <Badge className={getStatusColor(tool.status)}>
+                        {getStatusIcon(tool.status)}
+                        {tool.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Factory className="w-12 h-12 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">{tool.description}</p>
+                      <p className="text-xs text-gray-500">{tool.specifications}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-2xl font-bold text-innecos-green">${tool.price.toLocaleString()}</p>
+                        <p className="text-sm text-gray-500">Stock: {tool.stock} units</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => setSelectedTool(tool)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Tools Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-innecos-green">Tools Inventory Table</CardTitle>
+                <CardDescription>Detailed view of all agricultural tools</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
@@ -463,7 +539,7 @@ export default function ToolsPage() {
                         <TableHead>Stock</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Last Updated</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -474,18 +550,25 @@ export default function ToolsPage() {
                           <TableCell>${tool.price.toLocaleString()}</TableCell>
                           <TableCell>{tool.stock}</TableCell>
                           <TableCell>
-                            <Badge className={getStatusColor(tool.status)}>{tool.status}</Badge>
+                            <Badge className={getStatusColor(tool.status)}>
+                              {getStatusIcon(tool.status)}
+                              {tool.status}
+                            </Badge>
                           </TableCell>
                           <TableCell>{tool.lastUpdated}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end space-x-2">
-                              <Button variant="ghost" size="sm">
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="outline" size="sm" onClick={() => setSelectedTool(tool)}>
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button variant="outline" size="sm">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="sm" className="text-red-600">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 bg-transparent"
+                              >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -499,6 +582,58 @@ export default function ToolsPage() {
             </Card>
           </main>
         </SidebarInset>
+
+        {/* Tool Details Dialog */}
+        {selectedTool && (
+          <Dialog open={!!selectedTool} onOpenChange={() => setSelectedTool(null)}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>{selectedTool.name}</DialogTitle>
+                <DialogDescription>{selectedTool.category}</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                  <Factory className="w-16 h-16 text-gray-400" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Price</Label>
+                    <p className="text-2xl font-bold text-innecos-green">${selectedTool.price.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Stock</Label>
+                    <p className="text-lg">{selectedTool.stock} units</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Status</Label>
+                    <Badge className={getStatusColor(selectedTool.status)}>
+                      {getStatusIcon(selectedTool.status)}
+                      {selectedTool.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Last Updated</Label>
+                    <p>{selectedTool.lastUpdated}</p>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Description</Label>
+                  <p className="text-gray-600">{selectedTool.description}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Specifications</Label>
+                  <p className="text-gray-600">{selectedTool.specifications}</p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSelectedTool(null)}>
+                  Close
+                </Button>
+                <Button className="bg-innecos-green hover:bg-innecos-green/90">Edit Tool</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </SidebarProvider>
   )

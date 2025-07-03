@@ -15,8 +15,15 @@ export default function AuthPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
+  const [registerData, setRegisterData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  })
+  const [resetEmail, setResetEmail] = useState("")
 
-  // Replace the existing handleLogin function with this mock version
   const handleLogin = async () => {
     try {
       // Mock authentication - simulate API call delay
@@ -56,10 +63,42 @@ export default function AuthPage() {
     }
   }
 
-  const handleRegister = async (formData: FormData) => {
+  const handleRegister = async () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Validation
+      if (!registerData.firstName || !registerData.lastName || !registerData.email || !registerData.password) {
+        alert("Please fill in all fields")
+        return
+      }
+
+      if (!registerData.email.includes("@")) {
+        alert("Please enter a valid email address")
+        return
+      }
+
+      if (registerData.password.length < 6) {
+        alert("Password must be at least 6 characters long")
+        return
+      }
+
+      if (registerData.password !== registerData.confirmPassword) {
+        alert("Passwords do not match")
+        return
+      }
+
+      // Mock successful registration
       alert("Registration successful! Please login with your credentials.")
+
+      // Clear form
+      setRegisterData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      })
 
       // Switch to login tab
       const tabsList = document.querySelector('[role="tablist"]') as HTMLElement
@@ -70,14 +109,24 @@ export default function AuthPage() {
     }
   }
 
-  const handleForgotPassword = async (email: string) => {
+  const handleForgotPassword = async () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000))
-      if (email.includes("@")) {
-        alert("Password reset link sent to your email!")
-      } else {
-        alert("Please enter a valid email address")
+
+      if (!resetEmail) {
+        alert("Please enter your email address")
+        return
       }
+
+      if (!resetEmail.includes("@")) {
+        alert("Please enter a valid email address")
+        return
+      }
+
+      // In a real app, this would call your API
+      // For now, just show success message
+      alert("Password reset link sent to your email!")
+      setResetEmail("")
     } catch (error) {
       alert("Failed to send reset link. Please try again.")
     }
@@ -234,6 +283,8 @@ export default function AuthPage() {
                           id="first-name"
                           placeholder="John"
                           className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                          value={registerData.firstName}
+                          onChange={(e) => setRegisterData({ ...registerData, firstName: e.target.value })}
                         />
                       </div>
                     </div>
@@ -245,6 +296,8 @@ export default function AuthPage() {
                         id="last-name"
                         placeholder="Doe"
                         className="border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                        value={registerData.lastName}
+                        onChange={(e) => setRegisterData({ ...registerData, lastName: e.target.value })}
                       />
                     </div>
                   </div>
@@ -259,6 +312,8 @@ export default function AuthPage() {
                         type="email"
                         placeholder="john.doe@company.com"
                         className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                        value={registerData.email}
+                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                       />
                     </div>
                   </div>
@@ -273,6 +328,8 @@ export default function AuthPage() {
                         type={showPassword ? "text" : "password"}
                         placeholder="Create a strong password"
                         className="pl-10 pr-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                        value={registerData.password}
+                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                       />
                       <button
                         type="button"
@@ -294,6 +351,8 @@ export default function AuthPage() {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Confirm your password"
                         className="pl-10 pr-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                        value={registerData.confirmPassword}
+                        onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
                       />
                       <button
                         type="button"
@@ -317,7 +376,10 @@ export default function AuthPage() {
                       </a>
                     </Label>
                   </div>
-                  <Button className="w-full bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold py-2.5">
+                  <Button
+                    className="w-full bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold py-2.5"
+                    onClick={handleRegister}
+                  >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Create Admin Account
                   </Button>
@@ -347,16 +409,14 @@ export default function AuthPage() {
                         type="email"
                         placeholder="Enter your email address"
                         className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
                       />
                     </div>
                   </div>
                   <Button
                     className="w-full bg-innecos-green hover:bg-innecos-green/90 text-white font-semibold py-2.5"
-                    onClick={() => {
-                      const resetEmailInput = document.getElementById("reset-email") as HTMLInputElement
-                      const email = resetEmailInput?.value || ""
-                      handleForgotPassword(email)
-                    }}
+                    onClick={handleForgotPassword}
                   >
                     <Mail className="w-4 h-4 mr-2" />
                     Send Reset Link

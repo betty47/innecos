@@ -41,8 +41,6 @@ import {
   Search,
   Plus,
   TrendingUp,
-  Wheat,
-  Truck,
   Clock,
   LogOut,
   User,
@@ -108,6 +106,7 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem("user")
     router.push("/auth")
   }
 
@@ -206,18 +205,6 @@ export default function Dashboard() {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton>
-                      <Truck className="w-4 h-4" />
-                      <span>Supply Chain</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
-                      <Wheat className="w-4 h-4" />
-                      <span>Inventory</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
                       <Settings className="w-4 h-4" />
                       <span>Settings</span>
                     </SidebarMenuButton>
@@ -256,6 +243,10 @@ export default function Dashboard() {
                 <DropdownMenuItem>
                   <Shield className="w-4 h-4 mr-2" />
                   Security
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Change Password
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Cog className="w-4 h-4 mr-2" />
