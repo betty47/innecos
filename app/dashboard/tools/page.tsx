@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -19,14 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +34,15 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Leaf,
   LayoutDashboard,
@@ -77,10 +77,9 @@ const mockTools = [
     price: 15000,
     stock: 12,
     status: "In Stock",
-    description: "High-efficiency grain dryer with automated temperature control",
-    image: "/placeholder.svg?height=100&width=100",
+    description: "High-efficiency grain dryer with advanced temperature control",
     specifications: "Capacity: 500kg/hour, Power: 15kW",
-    lastUpdated: "2024-01-15",
+    image: "/placeholder.svg?height=100&width=100",
   },
   {
     id: 2,
@@ -90,9 +89,8 @@ const mockTools = [
     stock: 8,
     status: "In Stock",
     description: "Professional maize milling machine for commercial use",
+    specifications: "Output: 200kg/hour, Motor: 10HP",
     image: "/placeholder.svg?height=100&width=100",
-    specifications: "Capacity: 300kg/hour, Power: 10kW",
-    lastUpdated: "2024-01-14",
   },
   {
     id: 3,
@@ -101,10 +99,9 @@ const mockTools = [
     price: 12000,
     stock: 3,
     status: "Low Stock",
-    description: "Advanced oil pressing machine for various seeds",
+    description: "Cold-press oil extraction machine for various seeds",
+    specifications: "Capacity: 50kg/hour, Efficiency: 95%",
     image: "/placeholder.svg?height=100&width=100",
-    specifications: "Capacity: 200kg/hour, Power: 12kW",
-    lastUpdated: "2024-01-13",
   },
   {
     id: 4,
@@ -113,22 +110,20 @@ const mockTools = [
     price: 18000,
     stock: 0,
     status: "Out of Stock",
-    description: "Complete feed processing solution with mixing capabilities",
+    description: "Complete feed processing and mixing system",
+    specifications: "Batch Size: 1000kg, Mixing Time: 8min",
     image: "/placeholder.svg?height=100&width=100",
-    specifications: "Capacity: 800kg/hour, Power: 20kW",
-    lastUpdated: "2024-01-12",
   },
   {
     id: 5,
     name: "Silo Storage System",
     category: "Storage Systems",
     price: 25000,
-    stock: 5,
+    stock: 6,
     status: "In Stock",
-    description: "Modular silo system for grain storage",
-    image: "/placeholder.svg?height=100&width=100",
+    description: "Modular grain storage silo with monitoring system",
     specifications: "Capacity: 50 tons, Material: Galvanized Steel",
-    lastUpdated: "2024-01-11",
+    image: "/placeholder.svg?height=100&width=100",
   },
 ]
 
@@ -142,6 +137,8 @@ export default function ToolsPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedTool, setSelectedTool] = useState<any>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -217,9 +214,9 @@ export default function ToolsPage() {
           </div>
           <div className="text-white text-xl animate-fadeIn opacity-0 [animation-delay:300ms]">Loading...</div>
           <div className="flex space-x-2">
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:100ms]" />
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:200ms]" />
-            <div className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:300ms]" />
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: "100ms" }} />
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: "200ms" }} />
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
           </div>
         </div>
       </div>
@@ -370,13 +367,15 @@ export default function ToolsPage() {
                   <DialogTrigger asChild>
                     <Button className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green">
                       <Plus className="w-4 h-4 mr-2" />
-                      Add New Tool
+                      Add Tool
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle>Add New Tool</DialogTitle>
-                      <DialogDescription>Add a new agricultural tool to your inventory.</DialogDescription>
+                      <DialogDescription>
+                        Add a new tool to your inventory. Fill in all the required information.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid grid-cols-4 items-center gap-4">
@@ -432,7 +431,7 @@ export default function ToolsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-innecos-green">Filter Tools</CardTitle>
-                <CardDescription>Search and filter your agricultural tools</CardDescription>
+                <CardDescription>Search and filter your tools inventory</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col md:flex-row gap-4">
@@ -450,7 +449,7 @@ export default function ToolsPage() {
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                     <SelectTrigger className="w-[180px]">
                       <Filter className="w-4 h-4 mr-2" />
-                      <SelectValue />
+                      <SelectValue placeholder="Category" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
@@ -462,8 +461,8 @@ export default function ToolsPage() {
                     </SelectContent>
                   </Select>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue />
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
@@ -476,76 +475,41 @@ export default function ToolsPage() {
               </CardContent>
             </Card>
 
-            {/* Tools Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTools.map((tool) => (
-                <Card key={tool.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg text-innecos-green">{tool.name}</CardTitle>
-                        <CardDescription className="text-sm">{tool.category}</CardDescription>
-                      </div>
-                      <Badge className={getStatusColor(tool.status)}>
-                        {getStatusIcon(tool.status)}
-                        {tool.status}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Factory className="w-12 h-12 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">{tool.description}</p>
-                      <p className="text-xs text-gray-500">{tool.specifications}</p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-2xl font-bold text-innecos-green">${tool.price.toLocaleString()}</p>
-                        <p className="text-sm text-gray-500">Stock: {tool.stock} units</p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => setSelectedTool(tool)}>
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
             {/* Tools Table */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-innecos-green">Tools Inventory Table</CardTitle>
-                <CardDescription>Detailed view of all agricultural tools</CardDescription>
+                <CardTitle className="text-innecos-green">Tools Inventory</CardTitle>
+                <CardDescription>
+                  Manage your agricultural equipment and tools ({filteredTools.length} items)
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Tool Name</TableHead>
+                        <TableHead>Tool</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Price</TableHead>
                         <TableHead>Stock</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Last Updated</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredTools.map((tool) => (
                         <TableRow key={tool.id}>
-                          <TableCell className="font-medium">{tool.name}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Factory className="w-5 h-5 text-innecos-green" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{tool.name}</p>
+                                <p className="text-sm text-gray-500">{tool.description}</p>
+                              </div>
+                            </div>
+                          </TableCell>
                           <TableCell>{tool.category}</TableCell>
                           <TableCell>${tool.price.toLocaleString()}</TableCell>
                           <TableCell>{tool.stock}</TableCell>
@@ -555,20 +519,29 @@ export default function ToolsPage() {
                               {tool.status}
                             </Badge>
                           </TableCell>
-                          <TableCell>{tool.lastUpdated}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button variant="outline" size="sm" onClick={() => setSelectedTool(tool)}>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedTool(tool)
+                                  setIsViewDialogOpen(true)
+                                }}
+                              >
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="sm">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedTool(tool)
+                                  setIsEditDialogOpen(true)
+                                }}
+                              >
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 bg-transparent"
-                              >
+                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -580,60 +553,88 @@ export default function ToolsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* View Tool Dialog */}
+            <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>{selectedTool?.name}</DialogTitle>
+                  <DialogDescription>Tool details and specifications</DialogDescription>
+                </DialogHeader>
+                {selectedTool && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Category</Label>
+                        <p className="text-sm">{selectedTool.category}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Price</Label>
+                        <p className="text-sm">${selectedTool.price.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Stock</Label>
+                        <p className="text-sm">{selectedTool.stock} units</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Status</Label>
+                        <Badge className={getStatusColor(selectedTool.status)}>
+                          {getStatusIcon(selectedTool.status)}
+                          {selectedTool.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Description</Label>
+                      <p className="text-sm mt-1">{selectedTool.description}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Specifications</Label>
+                      <p className="text-sm mt-1">{selectedTool.specifications}</p>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Tool Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Tool</DialogTitle>
+                  <DialogDescription>Update the tool information. Make changes and save.</DialogDescription>
+                </DialogHeader>
+                {selectedTool && (
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-name" className="text-right">
+                        Name
+                      </Label>
+                      <Input id="edit-name" defaultValue={selectedTool.name} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-price" className="text-right">
+                        Price
+                      </Label>
+                      <Input id="edit-price" type="number" defaultValue={selectedTool.price} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-stock" className="text-right">
+                        Stock
+                      </Label>
+                      <Input id="edit-stock" type="number" defaultValue={selectedTool.stock} className="col-span-3" />
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button type="submit" className="bg-innecos-green hover:bg-innecos-green/90">
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </main>
         </SidebarInset>
-
-        {/* Tool Details Dialog */}
-        {selectedTool && (
-          <Dialog open={!!selectedTool} onOpenChange={() => setSelectedTool(null)}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>{selectedTool.name}</DialogTitle>
-                <DialogDescription>{selectedTool.category}</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Factory className="w-16 h-16 text-gray-400" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium">Price</Label>
-                    <p className="text-2xl font-bold text-innecos-green">${selectedTool.price.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Stock</Label>
-                    <p className="text-lg">{selectedTool.stock} units</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Status</Label>
-                    <Badge className={getStatusColor(selectedTool.status)}>
-                      {getStatusIcon(selectedTool.status)}
-                      {selectedTool.status}
-                    </Badge>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Last Updated</Label>
-                    <p>{selectedTool.lastUpdated}</p>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Description</Label>
-                  <p className="text-gray-600">{selectedTool.description}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Specifications</Label>
-                  <p className="text-gray-600">{selectedTool.specifications}</p>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setSelectedTool(null)}>
-                  Close
-                </Button>
-                <Button className="bg-innecos-green hover:bg-innecos-green/90">Edit Tool</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
       </div>
     </SidebarProvider>
   )

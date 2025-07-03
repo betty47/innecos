@@ -49,6 +49,7 @@ import {
   MessageSquare,
   Star,
   DollarSign,
+  Lock,
 } from "lucide-react"
 import Link from "next/link"
 

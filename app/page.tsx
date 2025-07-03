@@ -1,206 +1,156 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import {
-  Wheat,
-  Factory,
-  Truck,
-  Users,
-  BarChart3,
-  Settings,
-  Shield,
-  ArrowRight,
-  Leaf,
-  Cog,
-  TrendingUp,
-} from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Leaf, Factory, Users, BarChart3, ArrowRight, Shield, Zap, Globe } from "lucide-react"
 
-export default function AdminLanding() {
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-innecos-yellow to-innecos-green rounded-lg flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-innecos-green">INNECOS</h1>
-                <p className="text-xs text-gray-600">Admin Portal</p>
-              </div>
-            </div>
-            <Link href="/auth">
-              <Button className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold">
-                Access Portal
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+    <div className="min-h-screen bg-gradient-to-br from-innecos-green via-innecos-green/95 to-innecos-green/90">
+      {/* Navigation */}
+      <nav className="relative z-10 flex items-center justify-between p-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-innecos-yellow to-innecos-yellow/80 rounded-xl flex items-center justify-center">
+            <Leaf className="w-6 h-6 text-innecos-green" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white">INNECOS</h1>
+            <p className="text-xs text-green-200">Innovative Eco Solutions</p>
           </div>
         </div>
-      </header>
+        <Link href="/auth">
+          <Button className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold">
+            Admin Portal
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </Link>
+      </nav>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold text-innecos-green mb-6">
-              Welcome to INNECOS
-              <span className="block text-3xl md:text-4xl text-innecos-yellow mt-2">Admin Control Center</span>
-            </h1>
-            <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-              Manage your agro-processing technology platform with precision. Monitor equipment, track performance, and
-              drive agricultural innovation forward.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth">
-                <Button size="lg" className="bg-innecos-green hover:bg-innecos-green/90 text-white px-8 py-3">
-                  <Shield className="w-5 h-5 mr-2" />
-                  Secure Login
-                </Button>
-              </Link>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-innecos-green text-innecos-green hover:bg-innecos-green/5 px-8 py-3 bg-transparent"
-              >
-                <BarChart3 className="w-5 h-5 mr-2" />
-                View Demo
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-innecos-green mb-4">Innovative Eco Solutions at Your Fingertips</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Comprehensive management tools for agro-processing technology, designed to boost efficiency and
-              sustainability across your operations.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-innecos-yellow to-innecos-yellow/80 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Wheat className="w-8 h-8 text-innecos-green" />
-                </div>
-                <h3 className="text-xl font-semibold text-innecos-green mb-3">Equipment Management</h3>
-                <p className="text-gray-600">
-                  Monitor and manage grain dryers, milling systems, silos, and processing units in real-time.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-innecos-green to-innecos-green/80 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Factory className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-innecos-green mb-3">Production Analytics</h3>
-                <p className="text-gray-600">
-                  Track productivity metrics, efficiency rates, and performance data across all operations.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-innecos-yellow to-innecos-green rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Truck className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-innecos-green mb-3">Supply Chain</h3>
-                <p className="text-gray-600">
-                  Manage inventory, track shipments, and coordinate with suppliers and distributors.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-innecos-green to-innecos-yellow rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-innecos-green mb-3">Client Management</h3>
-                <p className="text-gray-600">
-                  Manage farmer relationships, cooperatives, and agribusiness partnerships effectively.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-innecos-yellow to-innecos-green rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <TrendingUp className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-innecos-green mb-3">Growth Insights</h3>
-                <p className="text-gray-600">
-                  Advanced analytics and reporting tools to drive strategic business decisions.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-innecos-green to-innecos-yellow rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <Settings className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-innecos-green mb-3">System Control</h3>
-                <p className="text-gray-600">
-                  Configure platform settings, manage user access, and maintain system security.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-innecos-green to-innecos-green/90">
-        <div className="container mx-auto text-center">
-          <div className="max-w-3xl mx-auto text-white">
-            <Cog className="w-16 h-16 mx-auto mb-6 text-innecos-yellow" />
-            <h2 className="text-4xl font-bold mb-6">Ready to Transform Agriculture?</h2>
-            <p className="text-xl mb-8 text-green-100">
-              Join the revolution in agro-processing technology. Access your admin portal and start building a smarter,
-              more resilient agricultural future.
-            </p>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <Badge className="bg-innecos-yellow/20 text-innecos-yellow border-innecos-yellow/30 mb-6">
+            🌱 Sustainable Agriculture Technology
+          </Badge>
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
+            Transforming
+            <span className="block text-innecos-yellow">Agriculture</span>
+          </h1>
+          <p className="text-xl text-green-100 max-w-3xl mx-auto mb-8">
+            Advanced agro-processing equipment and innovative solutions for modern farming. Empowering farmers with
+            cutting-edge technology for sustainable food production.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth">
               <Button
                 size="lg"
-                className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold px-10 py-4 text-lg"
+                className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold"
               >
-                <Shield className="w-5 h-5 mr-2" />
-                Access Admin Portal
+                Access Dashboard
+                <Shield className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white hover:text-innecos-green bg-transparent"
+            >
+              Learn More
+              <Globe className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+            <CardHeader>
+              <Factory className="w-8 h-8 text-innecos-yellow mb-2" />
+              <CardTitle className="text-lg">Advanced Equipment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-green-100">State-of-the-art grain dryers, mills, and processing equipment.</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+            <CardHeader>
+              <Users className="w-8 h-8 text-innecos-yellow mb-2" />
+              <CardTitle className="text-lg">Customer Focus</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-green-100">Dedicated support and customized solutions for every client.</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+            <CardHeader>
+              <BarChart3 className="w-8 h-8 text-innecos-yellow mb-2" />
+              <CardTitle className="text-lg">Data Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-green-100">Comprehensive analytics for optimized agricultural operations.</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+            <CardHeader>
+              <Zap className="w-8 h-8 text-innecos-yellow mb-2" />
+              <CardTitle className="text-lg">Innovation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-green-100">Cutting-edge technology for sustainable farming practices.</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="text-center">
+            <div className="text-4xl font-bold text-innecos-yellow mb-2">500+</div>
+            <div className="text-green-100">Happy Customers</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-innecos-yellow mb-2">50+</div>
+            <div className="text-green-100">Equipment Models</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-innecos-yellow mb-2">99%</div>
+            <div className="text-green-100">Customer Satisfaction</div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-center p-8">
+          <CardHeader>
+            <CardTitle className="text-2xl text-white mb-4">Ready to Transform Your Agriculture?</CardTitle>
+            <CardDescription className="text-green-100 text-lg">
+              Join hundreds of farmers who trust INNECOS for their agro-processing needs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/auth">
+              <Button
+                size="lg"
+                className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold"
+              >
+                Get Started Today
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-          </div>
-        </div>
-      </section>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t py-8 px-4">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-innecos-yellow to-innecos-green rounded-lg flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="font-semibold text-innecos-green">INNECOS LTD</p>
-                <p className="text-xs text-gray-600">Innovative Eco Solutions</p>
-              </div>
-            </div>
-            <p className="text-gray-600 text-sm">© 2024 INNECOS. Building a smarter agricultural future.</p>
-          </div>
-        </div>
-      </footer>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23fcc200' fillOpacity='0.3'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+      </div>
     </div>
   )
 }

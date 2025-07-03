@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Dialog,
   DialogContent,
@@ -19,14 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +34,15 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Leaf,
   LayoutDashboard,
@@ -61,7 +61,6 @@ import {
   Phone,
   MapPin,
   Calendar,
-  DollarSign,
   LogOut,
   User,
   Shield,
@@ -77,65 +76,65 @@ const mockCustomers = [
     name: "AgriCorp Ltd",
     email: "contact@agricorp.com",
     phone: "+1 (555) 123-4567",
-    location: "California, USA",
+    location: "Iowa, USA",
     joinDate: "2023-01-15",
+    status: "Active",
     totalOrders: 12,
     totalSpent: 145000,
-    status: "Active",
     lastOrder: "2024-01-10",
-    avatar: "/placeholder.svg?height=40&width=40",
+    type: "Corporate",
   },
   {
     id: 2,
     name: "Farm Valley Co-op",
     email: "info@farmvalley.com",
     phone: "+1 (555) 234-5678",
-    location: "Texas, USA",
+    location: "Nebraska, USA",
     joinDate: "2023-03-22",
+    status: "Active",
     totalOrders: 8,
     totalSpent: 89000,
-    status: "Active",
     lastOrder: "2024-01-08",
-    avatar: "/placeholder.svg?height=40&width=40",
+    type: "Cooperative",
   },
   {
     id: 3,
     name: "Green Fields",
     email: "admin@greenfields.com",
     phone: "+1 (555) 345-6789",
-    location: "Iowa, USA",
-    joinDate: "2023-05-10",
-    totalOrders: 15,
-    totalSpent: 198000,
+    location: "Kansas, USA",
+    joinDate: "2023-06-10",
     status: "Active",
+    totalOrders: 15,
+    totalSpent: 210000,
     lastOrder: "2024-01-12",
-    avatar: "/placeholder.svg?height=40&width=40",
+    type: "Farm",
   },
   {
     id: 4,
     name: "Harvest Solutions",
     email: "sales@harvestsol.com",
     phone: "+1 (555) 456-7890",
-    location: "Nebraska, USA",
-    joinDate: "2023-07-18",
-    totalOrders: 5,
-    totalSpent: 67000,
+    location: "Illinois, USA",
+    joinDate: "2023-09-05",
     status: "Inactive",
-    lastOrder: "2023-12-15",
-    avatar: "/placeholder.svg?height=40&width=40",
+    totalOrders: 3,
+    totalSpent: 25000,
+    lastOrder: "2023-11-20",
+    type: "Corporate",
   },
   {
     id: 5,
-    name: "Prairie Farms Inc",
-    email: "contact@prairiefarms.com",
+    name: "Prairie Grains",
+    email: "contact@prairiegrains.com",
     phone: "+1 (555) 567-8901",
-    location: "Kansas, USA",
-    joinDate: "2023-09-05",
-    totalOrders: 20,
-    totalSpent: 234000,
+    location: "Minnesota, USA",
+    joinDate: "2023-11-18",
     status: "Active",
-    lastOrder: "2024-01-14",
-    avatar: "/placeholder.svg?height=40&width=40",
+    totalOrders: 6,
+    totalSpent: 78000,
+    lastOrder: "2024-01-05",
+    type: "Farm",
   },
 ]
 
@@ -146,8 +145,11 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState(mockCustomers)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [typeFilter, setTypeFilter] = useState("all")
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -187,15 +189,31 @@ export default function CustomersPage() {
     }
   }
 
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "Corporate":
+        return "bg-blue-100 text-blue-700"
+      case "Cooperative":
+        return "bg-purple-100 text-purple-700"
+      case "Farm":
+        return "bg-green-100 text-green-700"
+      default:
+        return "bg-gray-100 text-gray-700"
+    }
+  }
+
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.location.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || customer.status === statusFilter
+    const matchesType = typeFilter === "all" || customer.type === typeFilter
 
-    return matchesSearch && matchesStatus
+    return matchesSearch && matchesStatus && matchesType
   })
+
+  const customerTypes = [...new Set(customers.map((customer) => customer.type))]
 
   if (loading) {
     return (
@@ -359,38 +377,57 @@ export default function CustomersPage() {
                   <DialogTrigger asChild>
                     <Button className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green">
                       <Plus className="w-4 h-4 mr-2" />
-                      Add New Customer
+                      Add Customer
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                       <DialogTitle>Add New Customer</DialogTitle>
-                      <DialogDescription>Add a new customer to your database.</DialogDescription>
+                      <DialogDescription>
+                        Add a new customer to your database. Fill in all the required information.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="customer-name" className="text-right">
+                        <Label htmlFor="name" className="text-right">
                           Name
                         </Label>
-                        <Input id="customer-name" className="col-span-3" />
+                        <Input id="name" className="col-span-3" />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="customer-email" className="text-right">
+                        <Label htmlFor="email" className="text-right">
                           Email
                         </Label>
-                        <Input id="customer-email" type="email" className="col-span-3" />
+                        <Input id="email" type="email" className="col-span-3" />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="customer-phone" className="text-right">
+                        <Label htmlFor="phone" className="text-right">
                           Phone
                         </Label>
-                        <Input id="customer-phone" className="col-span-3" />
+                        <Input id="phone" className="col-span-3" />
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="customer-location" className="text-right">
+                        <Label htmlFor="location" className="text-right">
                           Location
                         </Label>
-                        <Input id="customer-location" className="col-span-3" />
+                        <Input id="location" className="col-span-3" />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="type" className="text-right">
+                          Type
+                        </Label>
+                        <Select>
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {customerTypes.map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                     <DialogFooter>
@@ -406,6 +443,52 @@ export default function CustomersPage() {
 
           {/* Customers Content */}
           <main className="flex-1 p-6 space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Total Customers</CardTitle>
+                  <Users className="h-4 w-4 text-innecos-green" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-innecos-green">{customers.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Active Customers</CardTitle>
+                  <Users className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-innecos-green">
+                    {customers.filter((c) => c.status === "Active").length}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-innecos-yellow" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-innecos-green">
+                    ${customers.reduce((sum, c) => sum + c.totalSpent, 0).toLocaleString()}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Total Orders</CardTitle>
+                  <Factory className="h-4 w-4 text-innecos-green" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-innecos-green">
+                    {customers.reduce((sum, c) => sum + c.totalOrders, 0)}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Filters */}
             <Card>
               <CardHeader>
@@ -426,9 +509,9 @@ export default function CustomersPage() {
                     </div>
                   </div>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[150px]">
+                    <SelectTrigger className="w-[180px]">
                       <Filter className="w-4 h-4 mr-2" />
-                      <SelectValue />
+                      <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
@@ -436,55 +519,30 @@ export default function CustomersPage() {
                       <SelectItem value="Inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      {customerTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Customer Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Total Customers</CardTitle>
-                  <Users className="h-4 w-4 text-innecos-green" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-innecos-green">{customers.length}</div>
-                  <p className="text-xs text-green-600">Active customer base</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Active Customers</CardTitle>
-                  <Users className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-innecos-green">
-                    {customers.filter((c) => c.status === "Active").length}
-                  </div>
-                  <p className="text-xs text-green-600">Currently active</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
-                  <DollarSign className="h-4 w-4 text-innecos-yellow" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-innecos-green">
-                    ${customers.reduce((sum, c) => sum + c.totalSpent, 0).toLocaleString()}
-                  </div>
-                  <p className="text-xs text-green-600">From all customers</p>
-                </CardContent>
-              </Card>
-            </div>
 
             {/* Customers Table */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-innecos-green">Customer Database</CardTitle>
-                <CardDescription>Manage your customer relationships</CardDescription>
+                <CardDescription>
+                  Manage your customer relationships ({filteredCustomers.length} customers)
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -493,12 +551,11 @@ export default function CustomersPage() {
                       <TableRow>
                         <TableHead>Customer</TableHead>
                         <TableHead>Contact</TableHead>
-                        <TableHead>Location</TableHead>
+                        <TableHead>Type</TableHead>
                         <TableHead>Orders</TableHead>
                         <TableHead>Total Spent</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Last Order</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -506,8 +563,7 @@ export default function CustomersPage() {
                         <TableRow key={customer.id}>
                           <TableCell>
                             <div className="flex items-center space-x-3">
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage src={customer.avatar || "/placeholder.svg"} />
+                              <Avatar className="w-10 h-10">
                                 <AvatarFallback className="bg-innecos-yellow/20 text-innecos-green">
                                   {customer.name
                                     .split(" ")
@@ -517,47 +573,56 @@ export default function CustomersPage() {
                               </Avatar>
                               <div>
                                 <p className="font-medium">{customer.name}</p>
-                                <p className="text-sm text-gray-500">Since {customer.joinDate}</p>
+                                <p className="text-sm text-gray-500 flex items-center">
+                                  <MapPin className="w-3 h-3 mr-1" />
+                                  {customer.location}
+                                </p>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="space-y-1">
-                              <div className="flex items-center text-sm">
-                                <Mail className="w-3 h-3 mr-1 text-gray-400" />
+                              <p className="text-sm flex items-center">
+                                <Mail className="w-3 h-3 mr-1" />
                                 {customer.email}
-                              </div>
-                              <div className="flex items-center text-sm">
-                                <Phone className="w-3 h-3 mr-1 text-gray-400" />
+                              </p>
+                              <p className="text-sm flex items-center">
+                                <Phone className="w-3 h-3 mr-1" />
                                 {customer.phone}
-                              </div>
+                              </p>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center text-sm">
-                              <MapPin className="w-3 h-3 mr-1 text-gray-400" />
-                              {customer.location}
-                            </div>
+                            <Badge className={getTypeColor(customer.type)}>{customer.type}</Badge>
                           </TableCell>
                           <TableCell>{customer.totalOrders}</TableCell>
                           <TableCell>${customer.totalSpent.toLocaleString()}</TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(customer.status)}>{customer.status}</Badge>
                           </TableCell>
-                          <TableCell>{customer.lastOrder}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button variant="outline" size="sm" onClick={() => setSelectedCustomer(customer)}>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedCustomer(customer)
+                                  setIsViewDialogOpen(true)
+                                }}
+                              >
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="sm">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedCustomer(customer)
+                                  setIsEditDialogOpen(true)
+                                }}
+                              >
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 bg-transparent"
-                              >
+                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -569,87 +634,111 @@ export default function CustomersPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* View Customer Dialog */}
+            <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>{selectedCustomer?.name}</DialogTitle>
+                  <DialogDescription>Customer details and order history</DialogDescription>
+                </DialogHeader>
+                {selectedCustomer && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Email</Label>
+                        <p className="text-sm">{selectedCustomer.email}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Phone</Label>
+                        <p className="text-sm">{selectedCustomer.phone}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Location</Label>
+                        <p className="text-sm">{selectedCustomer.location}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Type</Label>
+                        <Badge className={getTypeColor(selectedCustomer.type)}>{selectedCustomer.type}</Badge>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Join Date</Label>
+                        <p className="text-sm flex items-center">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          {new Date(selectedCustomer.joinDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Status</Label>
+                        <Badge className={getStatusColor(selectedCustomer.status)}>{selectedCustomer.status}</Badge>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Total Orders</Label>
+                        <p className="text-sm">{selectedCustomer.totalOrders}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Total Spent</Label>
+                        <p className="text-sm">${selectedCustomer.totalSpent.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-500">Last Order</Label>
+                        <p className="text-sm">{new Date(selectedCustomer.lastOrder).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Customer Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Customer</DialogTitle>
+                  <DialogDescription>Update the customer information. Make changes and save.</DialogDescription>
+                </DialogHeader>
+                {selectedCustomer && (
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-name" className="text-right">
+                        Name
+                      </Label>
+                      <Input id="edit-name" defaultValue={selectedCustomer.name} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-email" className="text-right">
+                        Email
+                      </Label>
+                      <Input
+                        id="edit-email"
+                        type="email"
+                        defaultValue={selectedCustomer.email}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-phone" className="text-right">
+                        Phone
+                      </Label>
+                      <Input id="edit-phone" defaultValue={selectedCustomer.phone} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-location" className="text-right">
+                        Location
+                      </Label>
+                      <Input id="edit-location" defaultValue={selectedCustomer.location} className="col-span-3" />
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button type="submit" className="bg-innecos-green hover:bg-innecos-green/90">
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </main>
         </SidebarInset>
-
-        {/* Customer Details Dialog */}
-        {selectedCustomer && (
-          <Dialog open={!!selectedCustomer} onOpenChange={() => setSelectedCustomer(null)}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>{selectedCustomer.name}</DialogTitle>
-                <DialogDescription>Customer details and order history</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="w-16 h-16">
-                    <AvatarImage src={selectedCustomer.avatar || "/placeholder.svg"} />
-                    <AvatarFallback className="bg-innecos-yellow/20 text-innecos-green text-lg">
-                      {selectedCustomer.name
-                        .split(" ")
-                        .map((n: string) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-lg font-semibold">{selectedCustomer.name}</h3>
-                    <Badge className={getStatusColor(selectedCustomer.status)}>{selectedCustomer.status}</Badge>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium">Email</Label>
-                    <p className="flex items-center text-sm">
-                      <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                      {selectedCustomer.email}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Phone</Label>
-                    <p className="flex items-center text-sm">
-                      <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                      {selectedCustomer.phone}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Location</Label>
-                    <p className="flex items-center text-sm">
-                      <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                      {selectedCustomer.location}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Join Date</Label>
-                    <p className="flex items-center text-sm">
-                      <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                      {selectedCustomer.joinDate}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Total Orders</Label>
-                    <p className="text-2xl font-bold text-innecos-green">{selectedCustomer.totalOrders}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Total Spent</Label>
-                    <p className="text-2xl font-bold text-innecos-green">
-                      ${selectedCustomer.totalSpent.toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Last Order</Label>
-                    <p>{selectedCustomer.lastOrder}</p>
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setSelectedCustomer(null)}>
-                  Close
-                </Button>
-                <Button className="bg-innecos-green hover:bg-innecos-green/90">Edit Customer</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
       </div>
     </SidebarProvider>
   )
