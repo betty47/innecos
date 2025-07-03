@@ -1,213 +1,204 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Leaf, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react"
+import { Leaf, Mail, Lock, ArrowLeft, Eye, EyeOff, Shield, CheckCircle, AlertCircle, KeyRound } from "lucide-react"
 
 export default function AuthPage() {
-  const router = useRouter()
-  const [isLogin, setIsLogin] = useState(true)
-  const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null)
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    firstName: "",
-    lastName: "",
-  })
+  // Login state
+  const [loginEmail, setLoginEmail] = useState("")
+  const [loginPassword, setLoginPassword] = useState("")
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
-  }
+  // Register state
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [registerEmail, setRegisterEmail] = useState("")
+  const [registerPassword, setRegisterPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
 
-  const validateForm = () => {
-    if (!formData.email || !formData.password) {
-      setAlert({ type: "error", message: "Email and password are required" })
-      return false
+  // Reset password state
+  const [resetEmail, setResetEmail] = useState("")
+  const [resetStep, setResetStep] = useState(1) // 1: email input, 2: success message
+
+  // API handlers
+  const handleRegister = async () => {
+    if (registerPassword !== confirmPassword) {
+      setAlert({ type: "error", message: "Passwords do not match" })
+      return
     }
-
-    if (!isLogin && !isForgotPassword) {
-      if (!formData.firstName || !formData.lastName) {
-        setAlert({ type: "error", message: "All fields are required for registration" })
-        return false
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setAlert({ type: "error", message: "Passwords do not match" })
-        return false
-      }
-      if (formData.password.length < 6) {
-        setAlert({ type: "error", message: "Password must be at least 6 characters long" })
-        return false
-      }
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      setAlert({ type: "error", message: "Please enter a valid email address" })
-      return false
-    }
-
-    return true
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setAlert(null)
-
-    if (!validateForm()) return
 
     setLoading(true)
+    setAlert(null)
 
     try {
-      if (isForgotPassword) {
-        // Handle forgot password
-        setAlert({
-          type: "success",
-          message: "Password reset instructions have been sent to your email address",
-        })
-        setTimeout(() => {
-          setIsForgotPassword(false)
-          setIsLogin(true)
-        }, 2000)
-      } else if (isLogin) {
-        // Handle login
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-        })
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          email: registerEmail,
+          password: registerPassword,
+        }),
+      })
 
-        const data = await response.json()
-
-        if (response.ok) {
-          localStorage.setItem("token", data.token)
-          localStorage.setItem("user", JSON.stringify(data.user))
-
-          setAlert({ type: "success", message: "Login successful! Redirecting..." })
-          setTimeout(() => router.push("/dashboard"), 1000)
-        } else {
-          setAlert({ type: "error", message: data.error || "Login failed" })
-        }
+      const data = await res.json()
+      if (res.ok) {
+        setAlert({ type: "success", message: "Registration successful. Please login." })
+        // Clear form
+        setFirstName("")
+        setLastName("")
+        setRegisterEmail("")
+        setRegisterPassword("")
+        setConfirmPassword("")
       } else {
-        // Handle registration
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            password: formData.password,
-          }),
-        })
-
-        const data = await response.json()
-
-        if (response.ok) {
-          setAlert({
-            type: "success",
-            message: "Registration successful! Please login with your credentials.",
-          })
-          setTimeout(() => {
-            setIsLogin(true)
-            setFormData({
-              email: formData.email,
-              password: "",
-              confirmPassword: "",
-              firstName: "",
-              lastName: "",
-            })
-          }, 2000)
-        } else {
-          setAlert({ type: "error", message: data.error || "Registration failed" })
-        }
+        setAlert({ type: "error", message: data.message || "Registration failed" })
       }
     } catch (error) {
-      setAlert({ type: "error", message: "An error occurred. Please try again." })
+      setAlert({ type: "error", message: "Network error. Please try again." })
     } finally {
       setLoading(false)
     }
   }
 
-  const resetForm = () => {
-    setFormData({
-      email: "",
-      password: "",
-      confirmPassword: "",
-      firstName: "",
-      lastName: "",
-    })
+  const handleLogin = async () => {
+    setLoading(true)
+    setAlert(null)
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: loginEmail,
+          password: loginPassword,
+        }),
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        localStorage.setItem("token", data.token)
+        setAlert({ type: "success", message: "Login successful! Redirecting..." })
+        setTimeout(() => {
+          window.location.href = "/dashboard"
+        }, 1000)
+      } else {
+        setAlert({ type: "error", message: data.message || "Login failed" })
+      }
+    } catch (error) {
+      setAlert({ type: "error", message: "Network error. Please try again." })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResetPassword = async () => {
+    if (!resetEmail) {
+      setAlert({ type: "error", message: "Please enter your email address" })
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(resetEmail)) {
+      setAlert({ type: "error", message: "Please enter a valid email address" })
+      return
+    }
+
+    setLoading(true)
+    setAlert(null)
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: resetEmail,
+        }),
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        setResetStep(2)
+        setAlert({ type: "success", message: "Password reset instructions have been sent to your email." })
+      } else {
+        setAlert({ type: "error", message: data.message || "Failed to send reset email" })
+      }
+    } catch (error) {
+      setAlert({ type: "error", message: "Network error. Please try again." })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const resetResetForm = () => {
+    setResetStep(1)
+    setResetEmail("")
     setAlert(null)
   }
 
-  const switchToLogin = () => {
-    setIsLogin(true)
-    setIsForgotPassword(false)
-    resetForm()
-  }
-
-  const switchToRegister = () => {
-    setIsLogin(false)
-    setIsForgotPassword(false)
-    resetForm()
-  }
-
-  const switchToForgotPassword = () => {
-    setIsForgotPassword(true)
-    setIsLogin(true)
-    resetForm()
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-innecos-green to-innecos-green/90 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        {/* Logo */}
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-innecos-yellow to-innecos-yellow/80 rounded-xl flex items-center justify-center mx-auto mb-4 animate-fadeIn">
-            <Leaf className="w-8 h-8 text-innecos-green" />
+    <div className="min-h-screen bg-gradient-to-br from-innecos-green via-innecos-green/95 to-innecos-green/90 flex items-center justify-center p-4">
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23fcc200' fillOpacity='0.3'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="text-center mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center text-white hover:text-innecos-yellow transition-colors mb-6"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-innecos-yellow to-innecos-yellow/80 rounded-xl flex items-center justify-center">
+              <Leaf className="w-7 h-7 text-innecos-green" />
+            </div>
+            <div className="text-left">
+              <h1 className="text-2xl font-bold text-white">INNECOS</h1>
+              <p className="text-green-200 text-sm">Admin Portal</p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-white animate-fadeIn">INNECOS</h1>
-          <p className="text-white/80 animate-fadeIn">Agricultural Equipment Management</p>
+          <p className="text-green-100">Secure access to your agro-processing platform</p>
         </div>
 
-        {/* Auth Card */}
-        <Card className="animate-fadeIn">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-innecos-green">
-              {isForgotPassword ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {isForgotPassword
-                ? "Enter your email to receive reset instructions"
-                : isLogin
-                  ? "Sign in to your account"
-                  : "Sign up for a new account"}
-            </CardDescription>
+        <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+          <CardHeader className="text-center pb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-innecos-yellow to-innecos-green rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl text-innecos-green">Welcome Back</CardTitle>
+            <CardDescription>Choose your authentication method below</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+
+          <CardContent>
             {alert && (
-              <Alert className={alert.type === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+              <Alert
+                className={`mb-4 ${alert.type === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+              >
                 {alert.type === "success" ? (
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 ) : (
@@ -219,171 +210,235 @@ export default function AuthPage() {
               </Alert>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && !isForgotPassword && (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input
-                        id="firstName"
-                        name="firstName"
-                        type="text"
-                        placeholder="Enter first name"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        required={!isLogin && !isForgotPassword}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        placeholder="Enter last name"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        required={!isLogin && !isForgotPassword}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="register">Register</TabsTrigger>
+                <TabsTrigger value="forgot">Reset</TabsTrigger>
+              </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-
-              {!isForgotPassword && (
+              {/* Login */}
+              <TabsContent value="login" className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="login-email">Email Address</Label>
                   <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      id="password"
-                      name="password"
+                      id="login-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      className="pl-10"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="login-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
+                      className="pl-10 pr-10"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
                     />
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
-                      )}
-                    </Button>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </div>
-              )}
+                <Button
+                  className="w-full bg-innecos-green hover:bg-innecos-green/90"
+                  onClick={handleLogin}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Shield className="w-4 h-4 mr-2" /> Sign In to Portal
+                    </>
+                  )}
+                </Button>
+              </TabsContent>
 
-              {!isLogin && !isForgotPassword && (
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <div className="relative">
+              {/* Register */}
+              <TabsContent value="register" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first-name">First Name</Label>
                     <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
+                      id="first-name"
+                      placeholder="First name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last-name">Last Name</Label>
+                    <Input
+                      id="last-name"
+                      placeholder="Last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="register-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      className="pl-10"
+                      value={registerEmail}
+                      onChange={(e) => setRegisterEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="register-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password"
+                      className="pl-10 pr-10"
+                      value={registerPassword}
+                      onChange={(e) => setRegisterPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      required
+                      className="pl-10 pr-10"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     />
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <Button
+                  className="w-full bg-innecos-green hover:bg-innecos-green/90"
+                  onClick={handleRegister}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Creating account...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" /> Create Admin Account
+                    </>
+                  )}
+                </Button>
+              </TabsContent>
+
+              {/* Reset Password */}
+              <TabsContent value="forgot" className="space-y-4">
+                {resetStep === 1 ? (
+                  <>
+                    <div className="text-center mb-4">
+                      <KeyRound className="w-12 h-12 text-innecos-green mx-auto mb-2" />
+                      <h3 className="text-lg font-semibold text-innecos-green">Reset Your Password</h3>
+                      <p className="text-sm text-gray-600">
+                        Enter your email address and we'll send you instructions to reset your password.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="reset-email"
+                          type="email"
+                          placeholder="Enter your email address"
+                          className="pl-10"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      className="w-full bg-innecos-green hover:bg-innecos-green/90"
+                      onClick={handleResetPassword}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Sending instructions...</span>
+                        </div>
                       ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
+                        <>
+                          <Mail className="w-4 h-4 mr-2" /> Send Reset Instructions
+                        </>
                       )}
                     </Button>
-                  </div>
-                </div>
-              )}
-
-              <Button type="submit" className="w-full bg-innecos-green hover:bg-innecos-green/90" disabled={loading}>
-                {loading ? (
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Please wait...</span>
-                  </div>
-                ) : isForgotPassword ? (
-                  "Send Reset Instructions"
-                ) : isLogin ? (
-                  "Sign In"
+                  </>
                 ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </form>
-
-            <div className="text-center space-y-2">
-              {isForgotPassword ? (
-                <Button
-                  variant="link"
-                  className="text-innecos-green hover:text-innecos-green/80"
-                  onClick={switchToLogin}
-                >
-                  Back to Sign In
-                </Button>
-              ) : isLogin ? (
-                <>
-                  <Button
-                    variant="link"
-                    className="text-innecos-green hover:text-innecos-green/80 text-sm"
-                    onClick={switchToForgotPassword}
-                  >
-                    Forgot your password?
-                  </Button>
-                  <div className="text-sm text-gray-600">
-                    Don't have an account?{" "}
+                  <div className="text-center space-y-4">
+                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-innecos-green mb-2">Check Your Email</h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        We've sent password reset instructions to <strong>{resetEmail}</strong>
+                      </p>
+                      <p className="text-xs text-gray-500 mb-4">
+                        Didn't receive the email? Check your spam folder or try again.
+                      </p>
+                    </div>
                     <Button
-                      variant="link"
-                      className="text-innecos-green hover:text-innecos-green/80 p-0"
-                      onClick={switchToRegister}
+                      variant="outline"
+                      className="w-full border-innecos-green text-innecos-green hover:bg-innecos-green hover:text-white bg-transparent"
+                      onClick={resetResetForm}
                     >
-                      Sign up
+                      Try Different Email
                     </Button>
                   </div>
-                </>
-              ) : (
-                <div className="text-sm text-gray-600">
-                  Already have an account?{" "}
-                  <Button
-                    variant="link"
-                    className="text-innecos-green hover:text-innecos-green/80 p-0"
-                    onClick={switchToLogin}
-                  >
-                    Sign in
-                  </Button>
-                </div>
-              )}
-            </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
+
+        <div className="text-center mt-8 text-green-100 text-sm">
+          <p>© 2025 INNECOS LTD - Innovative Eco Solutions</p>
+        </div>
       </div>
     </div>
   )
