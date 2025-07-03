@@ -1,450 +1,379 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Leaf, Mail, Lock, User, ArrowLeft, Eye, EyeOff, Shield, CheckCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Leaf, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react"
 
 export default function AuthPage() {
+  const router = useRouter()
+  const [isLogin, setIsLogin] = useState(true)
+  const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [loginEmail, setLoginEmail] = useState("")
-  const [loginPassword, setLoginPassword] = useState("")
-  const [registerData, setRegisterData] = useState({
-    firstName: "",
-    lastName: "",
+  const [loading, setLoading] = useState(false)
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null)
+
+  const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
+    name: "",
+    company: "",
   })
-  const [resetEmail, setResetEmail] = useState("")
 
-  const handleLogin = async () => {
-    try {
-      // Mock authentication - simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
 
-      // Mock validation
-      if (!loginEmail || !loginPassword) {
-        alert("Please enter both email and password")
-        return
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setAlert({ type: "error", message: "Email and password are required" })
+      return false
+    }
+
+    if (!isLogin && !isForgotPassword) {
+      if (!formData.name || !formData.company) {
+        setAlert({ type: "error", message: "All fields are required for registration" })
+        return false
       }
+      if (formData.password !== formData.confirmPassword) {
+        setAlert({ type: "error", message: "Passwords do not match" })
+        return false
+      }
+      if (formData.password.length < 6) {
+        setAlert({ type: "error", message: "Password must be at least 6 characters long" })
+        return false
+      }
+    }
 
-      // Mock successful login for demo purposes
-      // In a real app, this would validate against your backend
-      if (loginEmail.includes("@") && loginPassword.length >= 6) {
-        // Generate a mock token
-        const mockToken = "mock-jwt-token-" + Date.now()
-        localStorage.setItem("token", mockToken)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setAlert({ type: "error", message: "Please enter a valid email address" })
+      return false
+    }
 
-        // Store mock user data
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAlert(null)
+
+    if (!validateForm()) return
+
+    setLoading(true)
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+
+      if (isForgotPassword) {
+        setAlert({
+          type: "success",
+          message: "Password reset instructions have been sent to your email address",
+        })
+        setTimeout(() => {
+          setIsForgotPassword(false)
+          setIsLogin(true)
+        }, 2000)
+      } else if (isLogin) {
+        // Mock login validation
+        if (formData.email === "admin@innecos.com" && formData.password === "admin123") {
+          const userData = {
             name: "John Doe",
-            email: loginEmail,
+            email: formData.email,
             role: "Admin",
-          }),
-        )
+            company: "INNECOS",
+            avatar: "/placeholder.svg?height=40&width=40",
+          }
 
-        // Redirect to dashboard
-        window.location.href = "/dashboard"
+          localStorage.setItem("token", "mock-jwt-token")
+          localStorage.setItem("user", JSON.stringify(userData))
+
+          setAlert({ type: "success", message: "Login successful! Redirecting..." })
+          setTimeout(() => router.push("/dashboard"), 1000)
+        } else {
+          setAlert({ type: "error", message: "Invalid email or password" })
+        }
       } else {
-        alert("Invalid credentials. Please use a valid email and password (min 6 characters)")
+        // Registration
+        setAlert({
+          type: "success",
+          message: "Registration successful! Please login with your credentials.",
+        })
+        setTimeout(() => {
+          setIsLogin(true)
+          setFormData({
+            email: formData.email,
+            password: "",
+            confirmPassword: "",
+            name: "",
+            company: "",
+          })
+        }, 2000)
       }
     } catch (error) {
-      console.error("Login error:", error)
-      alert("Login failed. Please try again.")
+      setAlert({ type: "error", message: "An error occurred. Please try again." })
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleRegister = async () => {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Validation
-      if (!registerData.firstName || !registerData.lastName || !registerData.email || !registerData.password) {
-        alert("Please fill in all fields")
-        return
-      }
-
-      if (!registerData.email.includes("@")) {
-        alert("Please enter a valid email address")
-        return
-      }
-
-      if (registerData.password.length < 6) {
-        alert("Password must be at least 6 characters long")
-        return
-      }
-
-      if (registerData.password !== registerData.confirmPassword) {
-        alert("Passwords do not match")
-        return
-      }
-
-      // Mock successful registration
-      alert("Registration successful! Please login with your credentials.")
-
-      // Clear form
-      setRegisterData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      })
-
-      // Switch to login tab
-      const tabsList = document.querySelector('[role="tablist"]') as HTMLElement
-      const loginTab = tabsList?.querySelector('[value="login"]') as HTMLElement
-      loginTab?.click()
-    } catch (error) {
-      alert("Registration failed. Please try again.")
-    }
+  const resetForm = () => {
+    setFormData({
+      email: "",
+      password: "",
+      confirmPassword: "",
+      name: "",
+      company: "",
+    })
+    setAlert(null)
   }
 
-  const handleForgotPassword = async () => {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+  const switchToLogin = () => {
+    setIsLogin(true)
+    setIsForgotPassword(false)
+    resetForm()
+  }
 
-      if (!resetEmail) {
-        alert("Please enter your email address")
-        return
-      }
+  const switchToRegister = () => {
+    setIsLogin(false)
+    setIsForgotPassword(false)
+    resetForm()
+  }
 
-      if (!resetEmail.includes("@")) {
-        alert("Please enter a valid email address")
-        return
-      }
-
-      // In a real app, this would call your API
-      // For now, just show success message
-      alert("Password reset link sent to your email!")
-      setResetEmail("")
-    } catch (error) {
-      alert("Failed to send reset link. Please try again.")
-    }
+  const switchToForgotPassword = () => {
+    setIsForgotPassword(true)
+    setIsLogin(true)
+    resetForm()
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-innecos-green via-innecos-green/95 to-innecos-green/90 flex items-center justify-center p-4">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23fcc200' fillOpacity='0.3'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center text-white hover:text-innecos-yellow transition-colors mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-innecos-yellow to-innecos-yellow/80 rounded-xl flex items-center justify-center">
-              <Leaf className="w-7 h-7 text-innecos-green" />
-            </div>
-            <div className="text-left">
-              <h1 className="text-2xl font-bold text-white">INNECOS</h1>
-              <p className="text-green-200 text-sm">Admin Portal</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-innecos-green to-innecos-green/90 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Logo */}
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-innecos-yellow to-innecos-yellow/80 rounded-xl flex items-center justify-center mx-auto mb-4 animate-fadeIn">
+            <Leaf className="w-8 h-8 text-innecos-green" />
           </div>
-          <p className="text-green-100">Secure access to your agro-processing platform</p>
+          <h1 className="text-3xl font-bold text-white animate-fadeIn">INNECOS</h1>
+          <p className="text-white/80 animate-fadeIn">Agricultural Equipment Management</p>
         </div>
 
         {/* Auth Card */}
-        <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
-          <CardHeader className="text-center pb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-innecos-yellow to-innecos-green rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-white" />
-            </div>
-            <CardTitle className="text-2xl text-innecos-green">Welcome Back</CardTitle>
-            <CardDescription>Choose your authentication method below</CardDescription>
+        <Card className="animate-fadeIn">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl text-center text-innecos-green">
+              {isForgotPassword ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
+            </CardTitle>
+            <CardDescription className="text-center">
+              {isForgotPassword
+                ? "Enter your email to receive reset instructions"
+                : isLogin
+                  ? "Sign in to your account"
+                  : "Sign up for a new account"}
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger
-                  value="login"
-                  className="data-[state=active]:bg-innecos-yellow data-[state=active]:text-innecos-green"
-                >
-                  Login
-                </TabsTrigger>
-                <TabsTrigger
-                  value="register"
-                  className="data-[state=active]:bg-innecos-yellow data-[state=active]:text-innecos-green"
-                >
-                  Register
-                </TabsTrigger>
-                <TabsTrigger
-                  value="forgot"
-                  className="data-[state=active]:bg-innecos-yellow data-[state=active]:text-innecos-green"
-                >
-                  Reset
-                </TabsTrigger>
-              </TabsList>
+          <CardContent className="space-y-4">
+            {alert && (
+              <Alert className={alert.type === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+                {alert.type === "success" ? (
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                )}
+                <AlertDescription className={alert.type === "success" ? "text-green-700" : "text-red-700"}>
+                  {alert.message}
+                </AlertDescription>
+              </Alert>
+            )}
 
-              {/* Login Tab */}
-              <TabsContent value="login" className="space-y-4">
-                <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && !isForgotPassword && (
+                <>
                   <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-innecos-green font-medium">
-                      Email Address
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="admin@innecos.com"
-                        className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                      />
-                    </div>
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required={!isLogin && !isForgotPassword}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-innecos-green font-medium">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="login-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        className="pl-10 pr-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                    <Label htmlFor="company">Company</Label>
+                    <Input
+                      id="company"
+                      name="company"
+                      type="text"
+                      placeholder="Enter your company name"
+                      value={formData.company}
+                      onChange={handleInputChange}
+                      required={!isLogin && !isForgotPassword}
+                    />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="remember" />
-                      <Label htmlFor="remember" className="text-sm text-gray-600">
-                        Remember me
-                      </Label>
-                    </div>
-                    <button
+                </>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {!isForgotPassword && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <Button
                       type="button"
-                      className="text-sm text-innecos-green hover:text-innecos-green/80 font-medium"
-                      onClick={() => {
-                        const tabsList = document.querySelector('[role="tablist"]') as HTMLElement
-                        const forgotTab = tabsList?.querySelector('[value="forgot"]') as HTMLElement
-                        forgotTab?.click()
-                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
                     >
-                      Forgot password?
-                    </button>
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </Button>
                   </div>
-                  <Button
-                    className="w-full bg-innecos-green hover:bg-innecos-green/90 text-white font-semibold py-2.5"
-                    onClick={handleLogin}
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    Sign In to Portal
-                  </Button>
                 </div>
-              </TabsContent>
+              )}
 
-              {/* Register Tab */}
-              <TabsContent value="register" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="first-name" className="text-innecos-green font-medium">
-                        First Name
-                      </Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="first-name"
-                          placeholder="John"
-                          className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
-                          value={registerData.firstName}
-                          onChange={(e) => setRegisterData({ ...registerData, firstName: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="last-name" className="text-innecos-green font-medium">
-                        Last Name
-                      </Label>
-                      <Input
-                        id="last-name"
-                        placeholder="Doe"
-                        className="border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
-                        value={registerData.lastName}
-                        onChange={(e) => setRegisterData({ ...registerData, lastName: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email" className="text-innecos-green font-medium">
-                      Email Address
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="register-email"
-                        type="email"
-                        placeholder="john.doe@company.com"
-                        className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
-                        value={registerData.email}
-                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password" className="text-innecos-green font-medium">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="register-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Create a strong password"
-                        className="pl-10 pr-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
-                        value={registerData.password}
-                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password" className="text-innecos-green font-medium">
-                      Confirm Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="confirm-password"
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Confirm your password"
-                        className="pl-10 pr-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
-                        value={registerData.confirmPassword}
-                        onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <Checkbox id="terms" className="mt-1" />
-                    <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-                      I agree to the{" "}
-                      <a href="#" className="text-innecos-green hover:underline font-medium">
-                        Terms of Service
-                      </a>{" "}
-                      and{" "}
-                      <a href="#" className="text-innecos-green hover:underline font-medium">
-                        Privacy Policy
-                      </a>
-                    </Label>
-                  </div>
-                  <Button
-                    className="w-full bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green font-semibold py-2.5"
-                    onClick={handleRegister}
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Create Admin Account
-                  </Button>
-                </div>
-              </TabsContent>
-
-              {/* Forgot Password Tab */}
-              <TabsContent value="forgot" className="space-y-4">
-                <div className="text-center mb-4">
-                  <div className="w-16 h-16 bg-innecos-yellow/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Mail className="w-8 h-8 text-innecos-yellow" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-innecos-green mb-2">Reset Your Password</h3>
-                  <p className="text-gray-600 text-sm">
-                    Enter your email address and we'll send you a link to reset your password.
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="reset-email" className="text-innecos-green font-medium">
-                      Email Address
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="reset-email"
-                        type="email"
-                        placeholder="Enter your email address"
-                        className="pl-10 border-gray-200 focus:border-innecos-yellow focus:ring-innecos-yellow"
-                        value={resetEmail}
-                        onChange={(e) => setResetEmail(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full bg-innecos-green hover:bg-innecos-green/90 text-white font-semibold py-2.5"
-                    onClick={handleForgotPassword}
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Send Reset Link
-                  </Button>
-                  <div className="text-center">
-                    <button
+              {!isLogin && !isForgotPassword && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <Button
                       type="button"
-                      className="text-sm text-innecos-green hover:text-innecos-green/80 font-medium"
-                      onClick={() => {
-                        const tabsList = document.querySelector('[role="tablist"]') as HTMLElement
-                        const loginTab = tabsList?.querySelector('[value="login"]') as HTMLElement
-                        loginTab?.click()
-                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
-                      Back to Login
-                    </button>
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </Button>
                   </div>
                 </div>
-              </TabsContent>
-            </Tabs>
+              )}
+
+              <Button type="submit" className="w-full bg-innecos-green hover:bg-innecos-green/90" disabled={loading}>
+                {loading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Please wait...</span>
+                  </div>
+                ) : isForgotPassword ? (
+                  "Send Reset Instructions"
+                ) : isLogin ? (
+                  "Sign In"
+                ) : (
+                  "Create Account"
+                )}
+              </Button>
+            </form>
+
+            <div className="text-center space-y-2">
+              {isForgotPassword ? (
+                <Button
+                  variant="link"
+                  className="text-innecos-green hover:text-innecos-green/80"
+                  onClick={switchToLogin}
+                >
+                  Back to Sign In
+                </Button>
+              ) : isLogin ? (
+                <>
+                  <Button
+                    variant="link"
+                    className="text-innecos-green hover:text-innecos-green/80 text-sm"
+                    onClick={switchToForgotPassword}
+                  >
+                    Forgot your password?
+                  </Button>
+                  <div className="text-sm text-gray-600">
+                    Don't have an account?{" "}
+                    <Button
+                      variant="link"
+                      className="text-innecos-green hover:text-innecos-green/80 p-0"
+                      onClick={switchToRegister}
+                    >
+                      Sign up
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm text-gray-600">
+                  Already have an account?{" "}
+                  <Button
+                    variant="link"
+                    className="text-innecos-green hover:text-innecos-green/80 p-0"
+                    onClick={switchToLogin}
+                  >
+                    Sign in
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Footer */}
-        <div className="text-center mt-8 text-green-100 text-sm">
-          <p>© 2024 INNECOS LTD - Innovative Eco Solutions</p>
-          <p className="mt-1">Building a smarter agricultural future</p>
-        </div>
+        {/* Demo Credentials */}
+        {isLogin && !isForgotPassword && (
+          <Card className="animate-fadeIn bg-white/10 border-white/20">
+            <CardContent className="pt-6">
+              <div className="text-center text-white/90 text-sm">
+                <p className="font-medium mb-2">Demo Credentials:</p>
+                <p>Email: admin@innecos.com</p>
+                <p>Password: admin123</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

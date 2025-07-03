@@ -6,18 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -35,15 +34,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
   Leaf,
   LayoutDashboard,
   Factory,
@@ -51,16 +41,15 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
-  Plus,
   Search,
   Filter,
+  Plus,
   Edit,
   Trash2,
   Eye,
   Mail,
   Phone,
   MapPin,
-  Calendar,
   LogOut,
   User,
   Shield,
@@ -69,7 +58,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
-// Mock customers data
+// Mock customer data
 const mockCustomers = [
   {
     id: 1,
@@ -77,12 +66,11 @@ const mockCustomers = [
     email: "contact@agricorp.com",
     phone: "+1 (555) 123-4567",
     location: "Iowa, USA",
-    joinDate: "2023-01-15",
     status: "Active",
-    totalOrders: 12,
-    totalSpent: 145000,
-    lastOrder: "2024-01-10",
-    type: "Corporate",
+    totalOrders: 15,
+    totalSpent: "$45,000",
+    joinDate: "2023-01-15",
+    avatar: "/placeholder.svg?height=40&width=40",
   },
   {
     id: 2,
@@ -90,12 +78,11 @@ const mockCustomers = [
     email: "info@farmvalley.com",
     phone: "+1 (555) 234-5678",
     location: "Nebraska, USA",
-    joinDate: "2023-03-22",
     status: "Active",
     totalOrders: 8,
-    totalSpent: 89000,
-    lastOrder: "2024-01-08",
-    type: "Cooperative",
+    totalSpent: "$28,500",
+    joinDate: "2023-03-22",
+    avatar: "/placeholder.svg?height=40&width=40",
   },
   {
     id: 3,
@@ -103,38 +90,35 @@ const mockCustomers = [
     email: "admin@greenfields.com",
     phone: "+1 (555) 345-6789",
     location: "Kansas, USA",
+    status: "Inactive",
+    totalOrders: 3,
+    totalSpent: "$12,000",
     joinDate: "2023-06-10",
-    status: "Active",
-    totalOrders: 15,
-    totalSpent: 210000,
-    lastOrder: "2024-01-12",
-    type: "Farm",
+    avatar: "/placeholder.svg?height=40&width=40",
   },
   {
     id: 4,
-    name: "Harvest Solutions",
-    email: "sales@harvestsol.com",
+    name: "Prairie Grains",
+    email: "contact@prairiegrains.com",
     phone: "+1 (555) 456-7890",
     location: "Illinois, USA",
-    joinDate: "2023-09-05",
-    status: "Inactive",
-    totalOrders: 3,
-    totalSpent: 25000,
-    lastOrder: "2023-11-20",
-    type: "Corporate",
+    status: "Active",
+    totalOrders: 22,
+    totalSpent: "$67,800",
+    joinDate: "2022-11-05",
+    avatar: "/placeholder.svg?height=40&width=40",
   },
   {
     id: 5,
-    name: "Prairie Grains",
-    email: "contact@prairiegrains.com",
+    name: "Harvest Solutions",
+    email: "sales@harvestsol.com",
     phone: "+1 (555) 567-8901",
     location: "Minnesota, USA",
-    joinDate: "2023-11-18",
     status: "Active",
-    totalOrders: 6,
-    totalSpent: 78000,
-    lastOrder: "2024-01-05",
-    type: "Farm",
+    totalOrders: 12,
+    totalSpent: "$35,200",
+    joinDate: "2023-02-18",
+    avatar: "/placeholder.svg?height=40&width=40",
   },
 ]
 
@@ -145,11 +129,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState(mockCustomers)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [locationFilter, setLocationFilter] = useState("all")
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -183,20 +163,7 @@ export default function CustomersPage() {
       case "Active":
         return "bg-green-100 text-green-700"
       case "Inactive":
-        return "bg-red-100 text-red-700"
-      default:
         return "bg-gray-100 text-gray-700"
-    }
-  }
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "Corporate":
-        return "bg-blue-100 text-blue-700"
-      case "Cooperative":
-        return "bg-purple-100 text-purple-700"
-      case "Farm":
-        return "bg-green-100 text-green-700"
       default:
         return "bg-gray-100 text-gray-700"
     }
@@ -208,12 +175,12 @@ export default function CustomersPage() {
       customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.location.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || customer.status === statusFilter
-    const matchesType = typeFilter === "all" || customer.type === typeFilter
+    const matchesLocation = locationFilter === "all" || customer.location.includes(locationFilter)
 
-    return matchesSearch && matchesStatus && matchesType
+    return matchesSearch && matchesStatus && matchesLocation
   })
 
-  const customerTypes = [...new Set(customers.map((customer) => customer.type))]
+  const locations = [...new Set(customers.map((customer) => customer.location.split(", ")[1]))]
 
   if (loading) {
     return (
@@ -372,128 +339,20 @@ export default function CustomersPage() {
               <div className="flex-1">
                 <h1 className="text-xl font-semibold text-innecos-green">Customers</h1>
               </div>
-              <div className="flex items-center gap-4">
-                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-innecos-yellow hover:bg-innecos-yellow/90 text-innecos-green">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Customer
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Add New Customer</DialogTitle>
-                      <DialogDescription>
-                        Add a new customer to your database. Fill in all the required information.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">
-                          Name
-                        </Label>
-                        <Input id="name" className="col-span-3" />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="email" className="text-right">
-                          Email
-                        </Label>
-                        <Input id="email" type="email" className="col-span-3" />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="phone" className="text-right">
-                          Phone
-                        </Label>
-                        <Input id="phone" className="col-span-3" />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="location" className="text-right">
-                          Location
-                        </Label>
-                        <Input id="location" className="col-span-3" />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="type" className="text-right">
-                          Type
-                        </Label>
-                        <Select>
-                          <SelectTrigger className="col-span-3">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {customerTypes.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button type="submit" className="bg-innecos-green hover:bg-innecos-green/90">
-                        Add Customer
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
+              <Button className="bg-innecos-green hover:bg-innecos-green/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Customer
+              </Button>
             </div>
           </header>
 
           {/* Customers Content */}
           <main className="flex-1 p-6 space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Total Customers</CardTitle>
-                  <Users className="h-4 w-4 text-innecos-green" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-innecos-green">{customers.length}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Active Customers</CardTitle>
-                  <Users className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-innecos-green">
-                    {customers.filter((c) => c.status === "Active").length}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-innecos-yellow" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-innecos-green">
-                    ${customers.reduce((sum, c) => sum + c.totalSpent, 0).toLocaleString()}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">Total Orders</CardTitle>
-                  <Factory className="h-4 w-4 text-innecos-green" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-innecos-green">
-                    {customers.reduce((sum, c) => sum + c.totalOrders, 0)}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* Filters */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-innecos-green">Filter Customers</CardTitle>
-                <CardDescription>Search and filter your customer database</CardDescription>
+                <CardDescription>Search and filter customer database</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col md:flex-row gap-4">
@@ -509,9 +368,9 @@ export default function CustomersPage() {
                     </div>
                   </div>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[150px]">
                       <Filter className="w-4 h-4 mr-2" />
-                      <SelectValue placeholder="Status" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
@@ -519,15 +378,16 @@ export default function CustomersPage() {
                       <SelectItem value="Inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Type" />
+                  <Select value={locationFilter} onValueChange={setLocationFilter}>
+                    <SelectTrigger className="w-[150px]">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      {customerTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
+                      <SelectItem value="all">All Locations</SelectItem>
+                      {locations.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -536,13 +396,62 @@ export default function CustomersPage() {
               </CardContent>
             </Card>
 
-            {/* Customers Table */}
+            {/* Customer Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Total Customers</CardTitle>
+                  <Users className="h-4 w-4 text-innecos-green" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-innecos-green">{customers.length}</div>
+                  <p className="text-xs text-gray-600">All registered</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Active Customers</CardTitle>
+                  <Users className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-innecos-green">
+                    {customers.filter((c) => c.status === "Active").length}
+                  </div>
+                  <p className="text-xs text-green-600">Currently active</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Total Orders</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-innecos-green" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-innecos-green">
+                    {customers.reduce((sum, c) => sum + c.totalOrders, 0)}
+                  </div>
+                  <p className="text-xs text-gray-600">All time</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-innecos-green" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-innecos-green">$188,500</div>
+                  <p className="text-xs text-gray-600">From all customers</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Customer Table */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-innecos-green">Customer Database</CardTitle>
-                <CardDescription>
-                  Manage your customer relationships ({filteredCustomers.length} customers)
-                </CardDescription>
+                <CardDescription>Manage your customer relationships</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -551,11 +460,12 @@ export default function CustomersPage() {
                       <TableRow>
                         <TableHead>Customer</TableHead>
                         <TableHead>Contact</TableHead>
-                        <TableHead>Type</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead>Orders</TableHead>
                         <TableHead>Total Spent</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>Join Date</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -564,6 +474,7 @@ export default function CustomersPage() {
                           <TableCell>
                             <div className="flex items-center space-x-3">
                               <Avatar className="w-10 h-10">
+                                <AvatarImage src={customer.avatar || "/placeholder.svg"} />
                                 <AvatarFallback className="bg-innecos-yellow/20 text-innecos-green">
                                   {customer.name
                                     .split(" ")
@@ -573,56 +484,47 @@ export default function CustomersPage() {
                               </Avatar>
                               <div>
                                 <p className="font-medium">{customer.name}</p>
-                                <p className="text-sm text-gray-500 flex items-center">
-                                  <MapPin className="w-3 h-3 mr-1" />
-                                  {customer.location}
-                                </p>
+                                <p className="text-sm text-gray-500">ID: {customer.id}</p>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="space-y-1">
-                              <p className="text-sm flex items-center">
-                                <Mail className="w-3 h-3 mr-1" />
+                              <div className="flex items-center text-sm">
+                                <Mail className="w-3 h-3 mr-1 text-gray-400" />
                                 {customer.email}
-                              </p>
-                              <p className="text-sm flex items-center">
-                                <Phone className="w-3 h-3 mr-1" />
+                              </div>
+                              <div className="flex items-center text-sm">
+                                <Phone className="w-3 h-3 mr-1 text-gray-400" />
                                 {customer.phone}
-                              </p>
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className={getTypeColor(customer.type)}>{customer.type}</Badge>
+                            <div className="flex items-center">
+                              <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+                              {customer.location}
+                            </div>
                           </TableCell>
-                          <TableCell>{customer.totalOrders}</TableCell>
-                          <TableCell>${customer.totalSpent.toLocaleString()}</TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(customer.status)}>{customer.status}</Badge>
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedCustomer(customer)
-                                  setIsViewDialogOpen(true)
-                                }}
-                              >
+                          <TableCell className="font-medium">{customer.totalOrders}</TableCell>
+                          <TableCell className="font-medium">{customer.totalSpent}</TableCell>
+                          <TableCell>{customer.joinDate}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="outline" size="sm">
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedCustomer(customer)
-                                  setIsEditDialogOpen(true)
-                                }}
-                              >
+                              <Button variant="outline" size="sm">
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 bg-transparent"
+                              >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -634,109 +536,6 @@ export default function CustomersPage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* View Customer Dialog */}
-            <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>{selectedCustomer?.name}</DialogTitle>
-                  <DialogDescription>Customer details and order history</DialogDescription>
-                </DialogHeader>
-                {selectedCustomer && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Email</Label>
-                        <p className="text-sm">{selectedCustomer.email}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Phone</Label>
-                        <p className="text-sm">{selectedCustomer.phone}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Location</Label>
-                        <p className="text-sm">{selectedCustomer.location}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Type</Label>
-                        <Badge className={getTypeColor(selectedCustomer.type)}>{selectedCustomer.type}</Badge>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Join Date</Label>
-                        <p className="text-sm flex items-center">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {new Date(selectedCustomer.joinDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Status</Label>
-                        <Badge className={getStatusColor(selectedCustomer.status)}>{selectedCustomer.status}</Badge>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Total Orders</Label>
-                        <p className="text-sm">{selectedCustomer.totalOrders}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Total Spent</Label>
-                        <p className="text-sm">${selectedCustomer.totalSpent.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-500">Last Order</Label>
-                        <p className="text-sm">{new Date(selectedCustomer.lastOrder).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
-
-            {/* Edit Customer Dialog */}
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Edit Customer</DialogTitle>
-                  <DialogDescription>Update the customer information. Make changes and save.</DialogDescription>
-                </DialogHeader>
-                {selectedCustomer && (
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-name" className="text-right">
-                        Name
-                      </Label>
-                      <Input id="edit-name" defaultValue={selectedCustomer.name} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-email" className="text-right">
-                        Email
-                      </Label>
-                      <Input
-                        id="edit-email"
-                        type="email"
-                        defaultValue={selectedCustomer.email}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-phone" className="text-right">
-                        Phone
-                      </Label>
-                      <Input id="edit-phone" defaultValue={selectedCustomer.phone} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-location" className="text-right">
-                        Location
-                      </Label>
-                      <Input id="edit-location" defaultValue={selectedCustomer.location} className="col-span-3" />
-                    </div>
-                  </div>
-                )}
-                <DialogFooter>
-                  <Button type="submit" className="bg-innecos-green hover:bg-innecos-green/90">
-                    Save Changes
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
           </main>
         </SidebarInset>
       </div>
