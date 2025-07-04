@@ -67,16 +67,7 @@ export default function AuthPage() {
       }),
     })
 
-  //   const data = await res.json()
 
-  //   if (res.ok) {
-  //     localStorage.setItem("token", data.token)
-  //     alert("Login successful")
-  //     // redirect or update user state
-  //   } else {
-  //     alert(data.message || "Login failed")
-  //   }
-  // }
       const data = await res.json()
     if (res.ok) {
       localStorage.setItem("token", data.token)
